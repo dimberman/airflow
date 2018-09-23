@@ -96,7 +96,8 @@ nosetests $nose_args
 
 # Fix codecov build path
 if [ ! -h /home/travis/build/apache/incubator-airflow ]; then
-  ln -s ${ROOTDIR} /home/travis/build/apache/incubator-airflow
+  sudo mkdir -p /home/travis/build/apache
+  sudo ln -s ${ROOTDIR} /home/travis/build/apache/incubator-airflow
 fi
 
 # To run individual tests:
