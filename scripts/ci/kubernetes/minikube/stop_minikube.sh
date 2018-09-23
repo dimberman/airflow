@@ -19,9 +19,21 @@
 
 #!/usr/bin/env bash
 
-set -x
+set -ex
 
-sudo minikube delete
-sudo rm -rf HOME/.kube $HOME/.minikube
+if [[ ! -x /usr/local/bin/minikube ]]; then
+  exit 0
+fi
+
+# Fix file permissions
+if [ `whoami` = "travis" ]; then
+  sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
+fi
+
+sudo minikube status
+if [ $? = 0 ]; then
+  sudo minikube delete
+  sudo rm -rf HOME/.kube $HOME/.minikube
+fi
 
 sudo chown -R travis.travis .

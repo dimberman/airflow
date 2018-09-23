@@ -106,7 +106,9 @@ ${SED_COMMAND} -i "s|{{CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT}}|$CONFIGMAP_GIT_DA
 ${SED_COMMAND} -i "s|{{CONFIGMAP_DAGS_VOLUME_CLAIM}}|$CONFIGMAP_DAGS_VOLUME_CLAIM|g" ${BUILD_DIRNAME}/configmaps.yaml
 
 # Fix file permissions
-sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
+if [ `whoami` = "travis" ]; then
+  sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
+fi
 
 kubectl delete -f $DIRNAME/postgres.yaml
 kubectl delete -f $BUILD_DIRNAME/airflow.yaml
