@@ -41,9 +41,9 @@ else
 fi
 
 cd $AIRFLOW_ROOT
-COMMAND="apt-get update && apt-get install -y --no-install-recommends git && pip install GitPython && python setup.py sdist -q"
 docker run -ti --rm -e SLUGIFY_USES_TEXT_UNIDECODE -v ${AIRFLOW_ROOT}:/airflow \
-    -w /airflow ${PYTHON_DOCKER_IMAGE} bash -c "${COMMAND}"
+    -w /airflow ${PYTHON_DOCKER_IMAGE} ./scripts/ci/kubernetes/docker/compile.sh
+
 echo "Copy distro $AIRFLOW_ROOT/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz"
 cp $AIRFLOW_ROOT/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz
 cd $DIRNAME && docker build --pull $DIRNAME --tag=${IMAGE}:${TAG}
