@@ -29,6 +29,9 @@ if [[ "${TRAVIS}" == true ]]; then
 fi
 
 $DIRNAME/minikube/start_minikube.sh
-$DIRNAME/docker/build.sh
+$DIRNAME/docker/build.sh $IMAGE $TAG
+
+
+
 
 echo "Airflow environment on kubernetes is good to go!"

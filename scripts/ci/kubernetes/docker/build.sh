@@ -17,8 +17,8 @@
 #  specific language governing permissions and limitations      *
 #  under the License.                                           *
 
-IMAGE=${1:-airflow}
-TAG=${2:-latest}
+IMAGE=${IMAGE:-airflow}
+TAG=${TAG:-latest}
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
 AIRFLOW_ROOT="$DIRNAME/../../../.."
 
@@ -50,3 +50,6 @@ echo "Copy distro $AIRFLOW_ROOT/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz"
 cp $AIRFLOW_ROOT/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz
 cd $DIRNAME && docker build --pull $DIRNAME --tag=${IMAGE}:${TAG}
 rm $DIRNAME/airflow.tar.gz
+if [[ "${USE_MINIKUBE}" != true ]]; then
+    $DIRNAME/minikube/start_minikube.sh
+fi
