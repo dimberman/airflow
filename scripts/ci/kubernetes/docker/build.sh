@@ -50,6 +50,3 @@ echo "Copy distro $AIRFLOW_ROOT/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz"
 cp $AIRFLOW_ROOT/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz
 cd $DIRNAME && docker build --pull $DIRNAME --tag=${IMAGE}:${TAG}
 rm $DIRNAME/airflow.tar.gz
-if [[ "${USE_MINIKUBE}" != true ]]; then
-    $DIRNAME/minikube/start_minikube.sh
-fi
