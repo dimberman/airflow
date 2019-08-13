@@ -53,6 +53,7 @@ from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import State
 import asyncio
+from concurrent.futures import ProcessPoolExecutor
 
 
 class AsyncioWorker(LoggingMixin):
@@ -68,7 +69,7 @@ class AsyncioWorker(LoggingMixin):
         self.command = None
         self.loop = loop
 
-    async def execute_work(self, key, command):
+    def execute_work(self, key, command):
         """
         Executes command received and stores result state in queue.
         :param key: the key to identify the TI
@@ -80,7 +81,7 @@ class AsyncioWorker(LoggingMixin):
             return
         self.log.info("%s running %s", self.__class__.__name__, command)
         try:
-            foo = await asyncio.create_subprocess_exec(
+            foo = asyncio.create_subprocess_exec(
                 *command,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
@@ -173,8 +174,9 @@ class LocalExecutor(BaseExecutor):
             """
             self.executor = executor
             self.loop = asyncio.get_event_loop()
-            self.worker = AsyncioWorker(self.executor.result_queue, self.loop)
+            self.pool_executor = ProcessPoolExecutor()
 
+            self.worker = AsyncioWorker(self.executor.result_queue, self.loop)
 
         def start(self):
             self.executor.workers_used = 0
@@ -189,7 +191,8 @@ class LocalExecutor(BaseExecutor):
             """
             self.executor.workers_used += 1
             self.executor.workers_active += 1
-            self.loop.run_until_complete(self.worker.execute_work(key=key, command=command))
+            self.loop.run_in_executor(executor=self.pool_executor,
+                                      func=self.worker.execute_work(key=key, command=command))
 
         def sync(self):
             while not self.executor.result_queue.empty():
