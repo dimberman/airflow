@@ -65,7 +65,7 @@ from airflow.utils.net import get_hostname
 from airflow.utils.log.logging_mixin import (LoggingMixin, redirect_stderr,
                                              redirect_stdout)
 from airflow.www.app import cached_app, create_app, cached_appbuilder
-
+from airflow.knative_worker import knative_worker
 from sqlalchemy.orm import exc
 
 api.load_auth()
@@ -887,6 +887,10 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
         finally:
             sys.exit(1)
 
+@cli_utils.action_logging
+def knative_worker(args):
+    app = knative_worker.create_app()
+    app.run()
 
 @cli_utils.action_logging
 def webserver(args):

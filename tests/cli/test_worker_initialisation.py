@@ -39,7 +39,7 @@ class TestWorkerPrecheck(unittest.TestCase):
         mock_validate_session.return_value = False
         with self.assertRaises(SystemExit) as cm:
             # airflow.bin.cli.worker(mock_args)
-            cli.worker(mock_args)
+            cli.knative_worker(mock_args)
         self.assertEqual(cm.exception.code, 1)
 
     @conf_vars({('core', 'worker_precheck'): 'False'})
