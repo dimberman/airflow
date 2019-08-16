@@ -28,7 +28,7 @@ import random
 import string
 from importlib import import_module
 import functools
-
+from flask_socketio import SocketIO
 import getpass
 import reprlib
 import argparse
@@ -65,7 +65,7 @@ from airflow.utils.net import get_hostname
 from airflow.utils.log.logging_mixin import (LoggingMixin, redirect_stderr,
                                              redirect_stdout)
 from airflow.www.app import cached_app, create_app, cached_appbuilder
-from airflow.knative_worker import knative_worker
+from airflow.knative_worker import knative_worker as kworker
 from sqlalchemy.orm import exc
 
 api.load_auth()
@@ -245,8 +245,8 @@ def delete_dag(args):
     """
     log = LoggingMixin().log
     if args.yes or input(
-            "This will drop all existing records related to the specified DAG. "
-            "Proceed? (y/n)").upper() == "Y":
+        "This will drop all existing records related to the specified DAG. "
+        "Proceed? (y/n)").upper() == "Y":
         try:
             message = api_client.delete_dag(dag_id=args.dag_id)
         except OSError as err:
@@ -624,7 +624,7 @@ def next_execution(args):
 def rotate_fernet_key(args):
     with db.create_session() as session:
         for conn in session.query(Connection).filter(
-                Connection.is_encrypted | Connection.is_extra_encrypted):
+            Connection.is_encrypted | Connection.is_extra_encrypted):
             conn.rotate_fernet_key()
         for var in session.query(Variable).filter(Variable.is_encrypted):
             var.rotate_fernet_key()
@@ -811,7 +811,7 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
             if 0 < timeout <= time.time() - t:
                 raise AirflowWebServerTimeout(
                     "No response from gunicorn master within {0} seconds"
-                    .format(timeout))
+                        .format(timeout))
             time.sleep(0.1)
 
     def start_refresh(gunicorn_master_proc):
@@ -825,12 +825,12 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
             gunicorn_master_proc.send_signal(signal.SIGTTIN)
             excess += 1
             wait_until_true(lambda: num_workers_expected + excess ==
-                            get_num_workers_running(gunicorn_master_proc),
+                                    get_num_workers_running(gunicorn_master_proc),
                             master_timeout)
 
     try:
         wait_until_true(lambda: num_workers_expected ==
-                        get_num_workers_running(gunicorn_master_proc),
+                                get_num_workers_running(gunicorn_master_proc),
                         master_timeout)
         while True:
             num_workers_running = get_num_workers_running(gunicorn_master_proc)
@@ -854,7 +854,7 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
                     gunicorn_master_proc.send_signal(signal.SIGTTOU)
                     excess -= 1
                     wait_until_true(lambda: num_workers_expected + excess ==
-                                    get_num_workers_running(gunicorn_master_proc),
+                                            get_num_workers_running(gunicorn_master_proc),
                                     master_timeout)
 
             # Start a new worker by asking gunicorn to increase number of workers
@@ -887,10 +887,12 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
         finally:
             sys.exit(1)
 
+
 @cli_utils.action_logging
 def knative_worker(args):
-    app = knative_worker.create_app()
-    app.run()
+    app = kworker.create_app()
+    app.run(debug=True, use_reloader=False)
+
 
 @cli_utils.action_logging
 def webserver(args):
@@ -1227,18 +1229,18 @@ def connections_add(args):
 
     with db.create_session() as session:
         if not (session.query(Connection)
-                .filter(Connection.conn_id == new_conn.conn_id).first()):
+            .filter(Connection.conn_id == new_conn.conn_id).first()):
             session.add(new_conn)
             msg = '\n\tSuccessfully added `conn_id`={conn_id} : {uri}\n'
             msg = msg.format(conn_id=new_conn.conn_id,
                              uri=args.conn_uri or
-                             urlunparse((args.conn_type,
-                                         '{login}:{password}@{host}:{port}'
+                                 urlunparse((args.conn_type,
+                                             '{login}:{password}@{host}:{port}'
                                              .format(login=args.conn_login or '',
                                                      password=args.conn_password or '',
                                                      host=args.conn_host or '',
                                                      port=args.conn_port or ''),
-                                         args.conn_schema or '', '', '', '')))
+                                             args.conn_schema or '', '', '', '')))
             print(msg)
         else:
             msg = '\n\tA connection with `conn_id`={conn_id} already exists\n'
@@ -1456,8 +1458,8 @@ def users_export(args):
 
     users = [
         {remove_underscores(field): user.__getattribute__(field)
-            if field != 'roles' else [r.name for r in user.roles]
-            for field in fields}
+        if field != 'roles' else [r.name for r in user.roles]
+         for field in fields}
         for user in users
     ]
 
@@ -2092,7 +2094,7 @@ class CLIFactory:
             ("import",),
             metavar="FILEPATH",
             help="Import users from JSON file. Example format:" +
-                    textwrap.dedent('''
+                 textwrap.dedent('''
                     [
                         {
                             "email": "foo@bar.org",
@@ -2384,6 +2386,11 @@ class CLIFactory:
             'func': serve_logs,
             'help': "Serve logs generate by worker",
             'args': tuple(),
+        }, {
+            'func': knative_worker,
+            'help': 'starts a knative worker',
+            'args': (),
+
         }, {
             'func': webserver,
             'help': "Start a Airflow webserver instance",

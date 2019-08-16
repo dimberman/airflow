@@ -28,3 +28,7 @@ if [[ "$1" = "scheduler" ]]
 then
 	exec airflow scheduler
 fi
+if [[ "$1" = "knative_worker" ]]
+then
+	exec airflow knative_worker
+fi

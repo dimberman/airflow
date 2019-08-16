@@ -193,14 +193,14 @@ class DagBag(BaseDagBag, LoggingMixin):
             if mod_name in sys.modules:
                 del sys.modules[mod_name]
 
-            with timeout(configuration.conf.getint('core', "DAGBAG_IMPORT_TIMEOUT")):
-                try:
-                    m = imp.load_source(mod_name, filepath)
-                    mods.append(m)
-                except Exception as e:
-                    self.log.exception("Failed to import: %s", filepath)
-                    self.import_errors[filepath] = str(e)
-                    self.file_last_changed[filepath] = file_last_changed_on_disk
+            # with timeout(configuration.conf.getint('core', "DAGBAG_IMPORT_TIMEOUT")):
+            try:
+                m = imp.load_source(mod_name, filepath)
+                mods.append(m)
+            except Exception as e:
+                self.log.exception("Failed to import: %s", filepath)
+                self.import_errors[filepath] = str(e)
+                self.file_last_changed[filepath] = file_last_changed_on_disk
 
         else:
             zip_file = zipfile.ZipFile(filepath)

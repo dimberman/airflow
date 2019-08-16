@@ -24,7 +24,7 @@ data:
     dags_folder = {{CONFIGMAP_DAGS_FOLDER}}
     base_log_folder = /root/airflow/logs
     logging_level = INFO
-    executor = KubernetesExecutor
+    executor = KnativeExecutor
     parallelism = 32
     load_examples = False
     plugins_folder = /root/airflow/plugins

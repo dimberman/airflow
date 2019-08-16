@@ -1,0 +1,1306 @@
+Unable to find image 'ubuntu:14.04' locally
+14.04: Pulling from library/ubuntu
+a7344f52cb74: Pulling fs layer
+515c9bb51536: Pulling fs layer
+e1eabe0537eb: Pulling fs layer
+4701f1215c13: Pulling fs layer
+4701f1215c13: Waiting
+e1eabe0537eb: Verifying Checksum
+e1eabe0537eb: Download complete
+515c9bb51536: Verifying Checksum
+515c9bb51536: Download complete
+4701f1215c13: Verifying Checksum
+4701f1215c13: Download complete
+a7344f52cb74: Verifying Checksum
+a7344f52cb74: Download complete
+a7344f52cb74: Pull complete
+515c9bb51536: Pull complete
+e1eabe0537eb: Pull complete
+4701f1215c13: Pull complete
+Digest: sha256:2f7c79927b346e436cc14c92bd4e5bd778c3bd7037f35bc639ac1589a7acfa90
+Status: Downloaded newer image for ubuntu:14.04
+Get:1 http://security.ubuntu.com trusty-security InRelease [65.9 kB]
+Ign http://archive.ubuntu.com trusty InRelease
+Get:2 http://archive.ubuntu.com trusty-updates InRelease [65.9 kB]
+Get:3 http://security.ubuntu.com trusty-security/main amd64 Packages [1032 kB]
+Get:4 http://archive.ubuntu.com trusty-backports InRelease [65.9 kB]
+Get:5 http://archive.ubuntu.com trusty Release.gpg [933 B]
+Get:6 http://archive.ubuntu.com trusty-updates/main amd64 Packages [1460 kB]
+Get:7 http://security.ubuntu.com trusty-security/restricted amd64 Packages [18.1 kB]
+Get:8 http://security.ubuntu.com trusty-security/universe amd64 Packages [377 kB]
+Get:9 http://security.ubuntu.com trusty-security/multiverse amd64 Packages [4730 B]
+Get:10 http://archive.ubuntu.com trusty-updates/restricted amd64 Packages [21.4 kB]
+Get:11 http://archive.ubuntu.com trusty-updates/universe amd64 Packages [671 kB]
+Get:12 http://archive.ubuntu.com trusty-updates/multiverse amd64 Packages [16.1 kB]
+Get:13 http://archive.ubuntu.com trusty-backports/main amd64 Packages [14.7 kB]
+Get:14 http://archive.ubuntu.com trusty-backports/restricted amd64 Packages [40 B]
+Get:15 http://archive.ubuntu.com trusty-backports/universe amd64 Packages [52.5 kB]
+Get:16 http://archive.ubuntu.com trusty-backports/multiverse amd64 Packages [1392 B]
+Get:17 http://archive.ubuntu.com trusty Release [58.5 kB]
+Get:18 http://archive.ubuntu.com trusty/main amd64 Packages [1743 kB]
+Get:19 http://archive.ubuntu.com trusty/restricted amd64 Packages [16.0 kB]
+Get:20 http://archive.ubuntu.com trusty/universe amd64 Packages [7589 kB]
+Get:21 http://archive.ubuntu.com trusty/multiverse amd64 Packages [169 kB]
+Fetched 13.4 MB in 15s (890 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following extra packages will be installed:
+  autotools-dev binutils ca-certificates cpp cpp-4.8 curl dpkg-dev fakeroot
+  g++ g++-4.8 gcc gcc-4.8 gettext-base git-man krb5-locales
+  libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl
+  libasan0 libasn1-8-heimdal libasprintf-dev libasprintf0c2 libatomic1
+  libbison-dev libc-dev-bin libc6-dev libcloog-isl4 libcroco3 libcurl3
+  libcurl3-gnutls libdpkg-perl libedit2 liberror-perl libfakeroot
+  libfile-fcntllock-perl libgcc-4.8-dev libgettextpo-dev libgettextpo0
+  libglib2.0-0 libglib2.0-data libgmp10 libgomp1 libgssapi-krb5-2
+  libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhx509-5-heimdal libidn11 libisl10 libitm1
+  libk5crypto3 libkeyutils1 libkrb5-26-heimdal libkrb5-3 libkrb5support0
+  libldap-2.4-2 libltdl-dev libltdl7 libmpc3 libmpfr4 libquadmath0
+  libroken18-heimdal librtmp0 libsasl2-2 libsasl2-modules libsasl2-modules-db
+  libsigsegv2 libstdc++-4.8-dev libtimedate-perl libtsan0 libunistring0
+  libwind0-heimdal libx11-6 libx11-data libxau6 libxcb1 libxdmcp6 libxext6
+  libxml2 libxmuu1 linux-libc-dev m4 make manpages manpages-dev openssh-client
+  openssl patch rsync sgml-base shared-mime-info xauth xml-core xz-utils
+Suggested packages:
+  autoconf2.13 autoconf-archive gnu-standards autoconf-doc binutils-doc
+  bison-doc cpp-doc gcc-4.8-locales debian-keyring g++-multilib
+  g++-4.8-multilib gcc-4.8-doc libstdc++6-4.8-dbg gcc-multilib automake1.9
+  flex gdb gcc-doc gcc-4.8-multilib libgcc1-dbg libgomp1-dbg libitm1-dbg
+  libatomic1-dbg libasan0-dbg libtsan0-dbg libquadmath0-dbg gettext-doc
+  git-daemon-run git-daemon-sysvinit git-doc git-el git-email git-gui gitk
+  gitweb git-arch git-bzr git-cvs git-mediawiki git-svn glibc-doc krb5-doc
+  krb5-user libtool-doc libsasl2-modules-otp libsasl2-modules-ldap
+  libsasl2-modules-sql libsasl2-modules-gssapi-mit
+  libsasl2-modules-gssapi-heimdal libstdc++-4.8-doc automaken gfortran
+  fortran95-compiler gcj-jdk make-doc man-browser ssh-askpass libpam-ssh
+  keychain monkeysphere ed diffutils-doc openssh-server sgml-base-doc
+  debhelper
+Recommended packages:
+  ssh-client
+The following NEW packages will be installed:
+  autoconf automake autopoint autotools-dev binutils bison build-essential
+  ca-certificates cpp cpp-4.8 curl dpkg-dev fakeroot g++ g++-4.8 gcc gcc-4.8
+  gettext gettext-base git git-man krb5-locales libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan0 libasn1-8-heimdal
+  libasprintf-dev libasprintf0c2 libatomic1 libbison-dev libc-dev-bin
+  libc6-dev libcloog-isl4 libcroco3 libcurl3 libcurl3-gnutls libdpkg-perl
+  libedit2 liberror-perl libfakeroot libfile-fcntllock-perl libgcc-4.8-dev
+  libgettextpo-dev libgettextpo0 libglib2.0-0 libglib2.0-data libgmp10
+  libgomp1 libgssapi-krb5-2 libgssapi3-heimdal libhcrypto4-heimdal
+  libheimbase1-heimdal libheimntlm0-heimdal libhx509-5-heimdal libidn11
+  libisl10 libitm1 libk5crypto3 libkeyutils1 libkrb5-26-heimdal libkrb5-3
+  libkrb5support0 libldap-2.4-2 libltdl-dev libltdl7 libmpc3 libmpfr4
+  libquadmath0 libroken18-heimdal librtmp0 libsasl2-2 libsasl2-modules
+  libsasl2-modules-db libsigsegv2 libstdc++-4.8-dev libtimedate-perl libtool
+  libtsan0 libunistring0 libwind0-heimdal libx11-6 libx11-data libxau6 libxcb1
+  libxdmcp6 libxext6 libxml2 libxmuu1 linux-libc-dev m4 make manpages
+  manpages-dev openssh-client openssl patch pkg-config rsync sgml-base
+  shared-mime-info xauth xml-core xz-utils
+0 upgraded, 104 newly installed, 0 to remove and 0 not upgraded.
+Need to get 54.4 MB of archives.
+After this operation, 186 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libroken18-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [39.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libasn1-8-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [160 kB]
+Get:3 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libasprintf0c2 amd64 0.18.3.1-1ubuntu3.1 [6466 B]
+Get:4 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libkrb5support0 amd64 1.12+dfsg-2ubuntu5.4 [31.1 kB]
+Get:5 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libk5crypto3 amd64 1.12+dfsg-2ubuntu5.4 [79.4 kB]
+Get:6 http://archive.ubuntu.com/ubuntu/ trusty/main libkeyutils1 amd64 1.5.6-1 [7318 B]
+Get:7 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libkrb5-3 amd64 1.12+dfsg-2ubuntu5.4 [262 kB]
+Get:8 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libgssapi-krb5-2 amd64 1.12+dfsg-2ubuntu5.4 [114 kB]
+Get:9 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libidn11 amd64 1.28-1ubuntu2.2 [94.6 kB]
+Get:10 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libhcrypto4-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [84.1 kB]
+Get:11 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libheimbase1-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [29.0 kB]
+Get:12 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libwind0-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [47.9 kB]
+Get:13 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libhx509-5-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [104 kB]
+Get:14 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libkrb5-26-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [196 kB]
+Get:15 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libheimntlm0-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [15.2 kB]
+Get:16 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libgssapi3-heimdal amd64 1.6~git20131207+dfsg-1ubuntu1.2 [89.7 kB]
+Get:17 http://archive.ubuntu.com/ubuntu/ trusty/main libsasl2-modules-db amd64 2.1.25.dfsg1-17build1 [14.9 kB]
+Get:18 http://archive.ubuntu.com/ubuntu/ trusty/main libsasl2-2 amd64 2.1.25.dfsg1-17build1 [56.5 kB]
+Get:19 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libldap-2.4-2 amd64 2.4.31-1+nmu2ubuntu8.5 [153 kB]
+Get:20 http://archive.ubuntu.com/ubuntu/ trusty-updates/main librtmp0 amd64 2.4+20121230.gitdf6c518-1ubuntu0.1 [50.4 kB]
+Get:21 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libcurl3-gnutls amd64 7.35.0-1ubuntu2.20 [166 kB]
+Get:22 http://archive.ubuntu.com/ubuntu/ trusty/main libedit2 amd64 3.1-20130712-2 [86.7 kB]
+Get:23 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libglib2.0-0 amd64 2.40.2-0ubuntu1.1 [1059 kB]
+Get:24 http://archive.ubuntu.com/ubuntu/ trusty/main libxau6 amd64 1:1.0.8-1 [8376 B]
+Get:25 http://archive.ubuntu.com/ubuntu/ trusty/main libxdmcp6 amd64 1:1.1.1-1 [12.8 kB]
+Get:26 http://archive.ubuntu.com/ubuntu/ trusty/main libxcb1 amd64 1.10-2ubuntu1 [38.0 kB]
+Get:27 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libx11-data all 2:1.6.2-1ubuntu2.1 [111 kB]
+Get:28 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libx11-6 amd64 2:1.6.2-1ubuntu2.1 [561 kB]
+Get:29 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libxext6 amd64 2:1.3.2-1ubuntu0.0.14.04.1 [28.8 kB]
+Get:30 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libxml2 amd64 2.9.1+dfsg1-3ubuntu4.13 [573 kB]
+Get:31 http://archive.ubuntu.com/ubuntu/ trusty/main libxmuu1 amd64 2:1.1.1-1 [11.0 kB]
+Get:32 http://archive.ubuntu.com/ubuntu/ trusty/main sgml-base all 1.26+nmu4ubuntu1 [12.5 kB]
+Get:33 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libasan0 amd64 4.8.4-2ubuntu1~14.04.4 [63.1 kB]
+Get:34 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libatomic1 amd64 4.8.4-2ubuntu1~14.04.4 [8630 B]
+Get:35 http://archive.ubuntu.com/ubuntu/ trusty/main libgmp10 amd64 2:5.1.3+dfsg-1ubuntu1 [218 kB]
+Get:36 http://archive.ubuntu.com/ubuntu/ trusty/main libisl10 amd64 0.12.2-1 [419 kB]
+Get:37 http://archive.ubuntu.com/ubuntu/ trusty/main libcloog-isl4 amd64 0.18.2-1 [57.5 kB]
+Get:38 http://archive.ubuntu.com/ubuntu/ trusty/main libcroco3 amd64 0.6.8-2ubuntu1 [82.4 kB]
+Get:39 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libcurl3 amd64 7.35.0-1ubuntu2.20 [173 kB]
+Get:40 http://archive.ubuntu.com/ubuntu/ trusty/main libunistring0 amd64 0.9.3-5ubuntu3 [271 kB]
+Get:41 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libgettextpo0 amd64 0.18.3.1-1ubuntu3.1 [108 kB]
+Get:42 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libgomp1 amd64 4.8.4-2ubuntu1~14.04.4 [23.1 kB]
+Get:43 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libitm1 amd64 4.8.4-2ubuntu1~14.04.4 [28.6 kB]
+Get:44 http://archive.ubuntu.com/ubuntu/ trusty/main libltdl7 amd64 2.4.2-1.7ubuntu1 [35.0 kB]
+Get:45 http://archive.ubuntu.com/ubuntu/ trusty/main libmpfr4 amd64 3.1.2-1 [203 kB]
+Get:46 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libquadmath0 amd64 4.8.4-2ubuntu1~14.04.4 [126 kB]
+Get:47 http://archive.ubuntu.com/ubuntu/ trusty/main libsigsegv2 amd64 2.10-2 [15.0 kB]
+Get:48 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libtsan0 amd64 4.8.4-2ubuntu1~14.04.4 [94.8 kB]
+Get:49 http://archive.ubuntu.com/ubuntu/ trusty/main libmpc3 amd64 1.0.1-1ubuntu1 [38.4 kB]
+Get:50 http://archive.ubuntu.com/ubuntu/ trusty-updates/main openssl amd64 1.0.1f-1ubuntu2.27 [489 kB]
+Get:51 http://archive.ubuntu.com/ubuntu/ trusty-updates/main ca-certificates all 20170717~14.04.2 [166 kB]
+Get:52 http://archive.ubuntu.com/ubuntu/ trusty-updates/main gettext-base amd64 0.18.3.1-1ubuntu3.1 [48.6 kB]
+Get:53 http://archive.ubuntu.com/ubuntu/ trusty-updates/main krb5-locales all 1.12+dfsg-2ubuntu5.4 [14.0 kB]
+Get:54 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libglib2.0-data all 2.40.2-0ubuntu1.1 [116 kB]
+Get:55 http://archive.ubuntu.com/ubuntu/ trusty/main libsasl2-modules amd64 2.1.25.dfsg1-17build1 [64.3 kB]
+Get:56 http://archive.ubuntu.com/ubuntu/ trusty/main manpages all 3.54-1ubuntu1 [627 kB]
+Get:57 http://archive.ubuntu.com/ubuntu/ trusty-updates/main openssh-client amd64 1:6.6p1-2ubuntu2.13 [567 kB]
+Get:58 http://archive.ubuntu.com/ubuntu/ trusty-updates/main rsync amd64 3.1.0-2ubuntu0.4 [284 kB]
+Get:59 http://archive.ubuntu.com/ubuntu/ trusty/main shared-mime-info amd64 1.2-0ubuntu3 [415 kB]
+Get:60 http://archive.ubuntu.com/ubuntu/ trusty/main xauth amd64 1:1.0.7-1ubuntu1 [25.8 kB]
+Get:61 http://archive.ubuntu.com/ubuntu/ trusty/main xml-core all 0.13+nmu2 [23.3 kB]
+Get:62 http://archive.ubuntu.com/ubuntu/ trusty/main m4 amd64 1.4.17-2ubuntu1 [195 kB]
+Get:63 http://archive.ubuntu.com/ubuntu/ trusty/main autoconf all 2.69-6 [322 kB]
+Get:64 http://archive.ubuntu.com/ubuntu/ trusty/main autotools-dev all 20130810.1 [44.3 kB]
+Get:65 http://archive.ubuntu.com/ubuntu/ trusty/main automake all 1:1.14.1-2ubuntu1 [510 kB]
+Get:66 http://archive.ubuntu.com/ubuntu/ trusty/main xz-utils amd64 5.1.1alpha+20120614-2ubuntu2 [78.8 kB]
+Get:67 http://archive.ubuntu.com/ubuntu/ trusty-updates/main autopoint all 0.18.3.1-1ubuntu3.1 [369 kB]
+Get:68 http://archive.ubuntu.com/ubuntu/ trusty-updates/main binutils amd64 2.24-5ubuntu14.2 [2076 kB]
+Get:69 http://archive.ubuntu.com/ubuntu/ trusty/main libbison-dev amd64 2:3.0.2.dfsg-2 [338 kB]
+Get:70 http://archive.ubuntu.com/ubuntu/ trusty/main bison amd64 2:3.0.2.dfsg-2 [257 kB]
+Get:71 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libc-dev-bin amd64 2.19-0ubuntu6.15 [68.9 kB]
+Get:72 http://archive.ubuntu.com/ubuntu/ trusty-updates/main linux-libc-dev amd64 3.13.0-170.220 [772 kB]
+Get:73 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libc6-dev amd64 2.19-0ubuntu6.15 [1913 kB]
+Get:74 http://archive.ubuntu.com/ubuntu/ trusty-updates/main cpp-4.8 amd64 4.8.4-2ubuntu1~14.04.4 [4452 kB]
+Get:75 http://archive.ubuntu.com/ubuntu/ trusty/main cpp amd64 4:4.8.2-1ubuntu6 [27.5 kB]
+Get:76 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libgcc-4.8-dev amd64 4.8.4-2ubuntu1~14.04.4 [1688 kB]
+Get:77 http://archive.ubuntu.com/ubuntu/ trusty-updates/main gcc-4.8 amd64 4.8.4-2ubuntu1~14.04.4 [5040 kB]
+Get:78 http://archive.ubuntu.com/ubuntu/ trusty/main gcc amd64 4:4.8.2-1ubuntu6 [5098 B]
+Get:79 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libstdc++-4.8-dev amd64 4.8.4-2ubuntu1~14.04.4 [1051 kB]
+Get:80 http://archive.ubuntu.com/ubuntu/ trusty-updates/main g++-4.8 amd64 4.8.4-2ubuntu1~14.04.4 [18.0 MB]
+Get:81 http://archive.ubuntu.com/ubuntu/ trusty/main g++ amd64 4:4.8.2-1ubuntu6 [1490 B]
+Get:82 http://archive.ubuntu.com/ubuntu/ trusty/main make amd64 3.81-8.2ubuntu3 [119 kB]
+Get:83 http://archive.ubuntu.com/ubuntu/ trusty/main libtimedate-perl all 2.3000-1 [37.2 kB]
+Get:84 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libdpkg-perl all 1.17.5ubuntu5.8 [179 kB]
+Get:85 http://archive.ubuntu.com/ubuntu/ trusty-updates/main patch amd64 2.7.1-4ubuntu2.4 [86.9 kB]
+Get:86 http://archive.ubuntu.com/ubuntu/ trusty-updates/main dpkg-dev all 1.17.5ubuntu5.8 [726 kB]
+Get:87 http://archive.ubuntu.com/ubuntu/ trusty/main build-essential amd64 11.6ubuntu6 [4838 B]
+Get:88 http://archive.ubuntu.com/ubuntu/ trusty-updates/main curl amd64 7.35.0-1ubuntu2.20 [123 kB]
+Get:89 http://archive.ubuntu.com/ubuntu/ trusty/main libfakeroot amd64 1.20-3ubuntu2 [25.4 kB]
+Get:90 http://archive.ubuntu.com/ubuntu/ trusty/main fakeroot amd64 1.20-3ubuntu2 [55.0 kB]
+Get:91 http://archive.ubuntu.com/ubuntu/ trusty-updates/main gettext amd64 0.18.3.1-1ubuntu3.1 [829 kB]
+Get:92 http://archive.ubuntu.com/ubuntu/ trusty/main liberror-perl all 0.17-1.1 [21.1 kB]
+Get:93 http://archive.ubuntu.com/ubuntu/ trusty-updates/main git-man all 1:1.9.1-1ubuntu0.10 [700 kB]
+Get:94 http://archive.ubuntu.com/ubuntu/ trusty-updates/main git amd64 1:1.9.1-1ubuntu0.10 [2737 kB]
+Get:95 http://archive.ubuntu.com/ubuntu/ trusty/main libalgorithm-diff-perl all 1.19.02-3 [50.0 kB]
+Get:96 http://archive.ubuntu.com/ubuntu/ trusty/main libalgorithm-diff-xs-perl amd64 0.04-2build4 [12.6 kB]
+Get:97 http://archive.ubuntu.com/ubuntu/ trusty/main libalgorithm-merge-perl all 0.08-2 [12.7 kB]
+Get:98 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libasprintf-dev amd64 0.18.3.1-1ubuntu3.1 [4438 B]
+Get:99 http://archive.ubuntu.com/ubuntu/ trusty/main libfile-fcntllock-perl amd64 0.14-2build1 [15.9 kB]
+Get:100 http://archive.ubuntu.com/ubuntu/ trusty-updates/main libgettextpo-dev amd64 0.18.3.1-1ubuntu3.1 [122 kB]
+Get:101 http://archive.ubuntu.com/ubuntu/ trusty/main libltdl-dev amd64 2.4.2-1.7ubuntu1 [157 kB]
+Get:102 http://archive.ubuntu.com/ubuntu/ trusty/main libtool amd64 2.4.2-1.7ubuntu1 [188 kB]
+Get:103 http://archive.ubuntu.com/ubuntu/ trusty/main manpages-dev all 3.54-1ubuntu1 [1820 kB]
+Get:104 http://archive.ubuntu.com/ubuntu/ trusty/main pkg-config amd64 0.26-1ubuntu4 [40.9 kB]
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+dpkg-preconfigure: unable to re-open stdin: 
+Fetched 54.4 MB in 1min 15s (721 kB/s)
+Selecting previously unselected package libroken18-heimdal:amd64.
+(Reading database ... 11585 files and directories currently installed.)
+Preparing to unpack .../libroken18-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libroken18-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libasn1-8-heimdal:amd64.
+Preparing to unpack .../libasn1-8-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libasn1-8-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libasprintf0c2:amd64.
+Preparing to unpack .../libasprintf0c2_0.18.3.1-1ubuntu3.1_amd64.deb ...
+Unpacking libasprintf0c2:amd64 (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package libkrb5support0:amd64.
+Preparing to unpack .../libkrb5support0_1.12+dfsg-2ubuntu5.4_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../libk5crypto3_1.12+dfsg-2ubuntu5.4_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../libkeyutils1_1.5.6-1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.5.6-1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../libkrb5-3_1.12+dfsg-2ubuntu5.4_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../libgssapi-krb5-2_1.12+dfsg-2ubuntu5.4_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Selecting previously unselected package libidn11:amd64.
+Preparing to unpack .../libidn11_1.28-1ubuntu2.2_amd64.deb ...
+Unpacking libidn11:amd64 (1.28-1ubuntu2.2) ...
+Selecting previously unselected package libhcrypto4-heimdal:amd64.
+Preparing to unpack .../libhcrypto4-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libhcrypto4-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libheimbase1-heimdal:amd64.
+Preparing to unpack .../libheimbase1-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libheimbase1-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libwind0-heimdal:amd64.
+Preparing to unpack .../libwind0-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libwind0-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libhx509-5-heimdal:amd64.
+Preparing to unpack .../libhx509-5-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libhx509-5-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libkrb5-26-heimdal:amd64.
+Preparing to unpack .../libkrb5-26-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libkrb5-26-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libheimntlm0-heimdal:amd64.
+Preparing to unpack .../libheimntlm0-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libheimntlm0-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libgssapi3-heimdal:amd64.
+Preparing to unpack .../libgssapi3-heimdal_1.6~git20131207+dfsg-1ubuntu1.2_amd64.deb ...
+Unpacking libgssapi3-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../libsasl2-modules-db_2.1.25.dfsg1-17build1_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.25.dfsg1-17build1) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../libsasl2-2_2.1.25.dfsg1-17build1_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.25.dfsg1-17build1) ...
+Selecting previously unselected package libldap-2.4-2:amd64.
+Preparing to unpack .../libldap-2.4-2_2.4.31-1+nmu2ubuntu8.5_amd64.deb ...
+Unpacking libldap-2.4-2:amd64 (2.4.31-1+nmu2ubuntu8.5) ...
+Selecting previously unselected package librtmp0:amd64.
+Preparing to unpack .../librtmp0_2.4+20121230.gitdf6c518-1ubuntu0.1_amd64.deb ...
+Unpacking librtmp0:amd64 (2.4+20121230.gitdf6c518-1ubuntu0.1) ...
+Selecting previously unselected package libcurl3-gnutls:amd64.
+Preparing to unpack .../libcurl3-gnutls_7.35.0-1ubuntu2.20_amd64.deb ...
+Unpacking libcurl3-gnutls:amd64 (7.35.0-1ubuntu2.20) ...
+Selecting previously unselected package libedit2:amd64.
+Preparing to unpack .../libedit2_3.1-20130712-2_amd64.deb ...
+Unpacking libedit2:amd64 (3.1-20130712-2) ...
+Selecting previously unselected package libglib2.0-0:amd64.
+Preparing to unpack .../libglib2.0-0_2.40.2-0ubuntu1.1_amd64.deb ...
+Unpacking libglib2.0-0:amd64 (2.40.2-0ubuntu1.1) ...
+Selecting previously unselected package libxau6:amd64.
+Preparing to unpack .../libxau6_1%3a1.0.8-1_amd64.deb ...
+Unpacking libxau6:amd64 (1:1.0.8-1) ...
+Selecting previously unselected package libxdmcp6:amd64.
+Preparing to unpack .../libxdmcp6_1%3a1.1.1-1_amd64.deb ...
+Unpacking libxdmcp6:amd64 (1:1.1.1-1) ...
+Selecting previously unselected package libxcb1:amd64.
+Preparing to unpack .../libxcb1_1.10-2ubuntu1_amd64.deb ...
+Unpacking libxcb1:amd64 (1.10-2ubuntu1) ...
+Selecting previously unselected package libx11-data.
+Preparing to unpack .../libx11-data_2%3a1.6.2-1ubuntu2.1_all.deb ...
+Unpacking libx11-data (2:1.6.2-1ubuntu2.1) ...
+Selecting previously unselected package libx11-6:amd64.
+Preparing to unpack .../libx11-6_2%3a1.6.2-1ubuntu2.1_amd64.deb ...
+Unpacking libx11-6:amd64 (2:1.6.2-1ubuntu2.1) ...
+Selecting previously unselected package libxext6:amd64.
+Preparing to unpack .../libxext6_2%3a1.3.2-1ubuntu0.0.14.04.1_amd64.deb ...
+Unpacking libxext6:amd64 (2:1.3.2-1ubuntu0.0.14.04.1) ...
+Selecting previously unselected package libxml2:amd64.
+Preparing to unpack .../libxml2_2.9.1+dfsg1-3ubuntu4.13_amd64.deb ...
+Unpacking libxml2:amd64 (2.9.1+dfsg1-3ubuntu4.13) ...
+Selecting previously unselected package libxmuu1:amd64.
+Preparing to unpack .../libxmuu1_2%3a1.1.1-1_amd64.deb ...
+Unpacking libxmuu1:amd64 (2:1.1.1-1) ...
+Selecting previously unselected package sgml-base.
+Preparing to unpack .../sgml-base_1.26+nmu4ubuntu1_all.deb ...
+Unpacking sgml-base (1.26+nmu4ubuntu1) ...
+Selecting previously unselected package libasan0:amd64.
+Preparing to unpack .../libasan0_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libasan0:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../libatomic1_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libatomic1:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package libgmp10:amd64.
+Preparing to unpack .../libgmp10_2%3a5.1.3+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libgmp10:amd64 (2:5.1.3+dfsg-1ubuntu1) ...
+Selecting previously unselected package libisl10:amd64.
+Preparing to unpack .../libisl10_0.12.2-1_amd64.deb ...
+Unpacking libisl10:amd64 (0.12.2-1) ...
+Selecting previously unselected package libcloog-isl4:amd64.
+Preparing to unpack .../libcloog-isl4_0.18.2-1_amd64.deb ...
+Unpacking libcloog-isl4:amd64 (0.18.2-1) ...
+Selecting previously unselected package libcroco3:amd64.
+Preparing to unpack .../libcroco3_0.6.8-2ubuntu1_amd64.deb ...
+Unpacking libcroco3:amd64 (0.6.8-2ubuntu1) ...
+Selecting previously unselected package libcurl3:amd64.
+Preparing to unpack .../libcurl3_7.35.0-1ubuntu2.20_amd64.deb ...
+Unpacking libcurl3:amd64 (7.35.0-1ubuntu2.20) ...
+Selecting previously unselected package libunistring0:amd64.
+Preparing to unpack .../libunistring0_0.9.3-5ubuntu3_amd64.deb ...
+Unpacking libunistring0:amd64 (0.9.3-5ubuntu3) ...
+Selecting previously unselected package libgettextpo0:amd64.
+Preparing to unpack .../libgettextpo0_0.18.3.1-1ubuntu3.1_amd64.deb ...
+Unpacking libgettextpo0:amd64 (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../libgomp1_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libgomp1:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../libitm1_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libitm1:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package libltdl7:amd64.
+Preparing to unpack .../libltdl7_2.4.2-1.7ubuntu1_amd64.deb ...
+Unpacking libltdl7:amd64 (2.4.2-1.7ubuntu1) ...
+Selecting previously unselected package libmpfr4:amd64.
+Preparing to unpack .../libmpfr4_3.1.2-1_amd64.deb ...
+Unpacking libmpfr4:amd64 (3.1.2-1) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../libquadmath0_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libquadmath0:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package libsigsegv2:amd64.
+Preparing to unpack .../libsigsegv2_2.10-2_amd64.deb ...
+Unpacking libsigsegv2:amd64 (2.10-2) ...
+Selecting previously unselected package libtsan0:amd64.
+Preparing to unpack .../libtsan0_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libtsan0:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../libmpc3_1.0.1-1ubuntu1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.0.1-1ubuntu1) ...
+Selecting previously unselected package openssl.
+Preparing to unpack .../openssl_1.0.1f-1ubuntu2.27_amd64.deb ...
+Unpacking openssl (1.0.1f-1ubuntu2.27) ...
+Selecting previously unselected package ca-certificates.
+Preparing to unpack .../ca-certificates_20170717~14.04.2_all.deb ...
+Unpacking ca-certificates (20170717~14.04.2) ...
+Selecting previously unselected package gettext-base.
+Preparing to unpack .../gettext-base_0.18.3.1-1ubuntu3.1_amd64.deb ...
+Unpacking gettext-base (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package krb5-locales.
+Preparing to unpack .../krb5-locales_1.12+dfsg-2ubuntu5.4_all.deb ...
+Unpacking krb5-locales (1.12+dfsg-2ubuntu5.4) ...
+Selecting previously unselected package libglib2.0-data.
+Preparing to unpack .../libglib2.0-data_2.40.2-0ubuntu1.1_all.deb ...
+Unpacking libglib2.0-data (2.40.2-0ubuntu1.1) ...
+Selecting previously unselected package libsasl2-modules:amd64.
+Preparing to unpack .../libsasl2-modules_2.1.25.dfsg1-17build1_amd64.deb ...
+Unpacking libsasl2-modules:amd64 (2.1.25.dfsg1-17build1) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../manpages_3.54-1ubuntu1_all.deb ...
+Unpacking manpages (3.54-1ubuntu1) ...
+Selecting previously unselected package openssh-client.
+Preparing to unpack .../openssh-client_1%3a6.6p1-2ubuntu2.13_amd64.deb ...
+Unpacking openssh-client (1:6.6p1-2ubuntu2.13) ...
+Selecting previously unselected package rsync.
+Preparing to unpack .../rsync_3.1.0-2ubuntu0.4_amd64.deb ...
+Unpacking rsync (3.1.0-2ubuntu0.4) ...
+Selecting previously unselected package shared-mime-info.
+Preparing to unpack .../shared-mime-info_1.2-0ubuntu3_amd64.deb ...
+Unpacking shared-mime-info (1.2-0ubuntu3) ...
+Selecting previously unselected package xauth.
+Preparing to unpack .../xauth_1%3a1.0.7-1ubuntu1_amd64.deb ...
+Unpacking xauth (1:1.0.7-1ubuntu1) ...
+Selecting previously unselected package xml-core.
+Preparing to unpack .../xml-core_0.13+nmu2_all.deb ...
+Unpacking xml-core (0.13+nmu2) ...
+Selecting previously unselected package m4.
+Preparing to unpack .../m4_1.4.17-2ubuntu1_amd64.deb ...
+Unpacking m4 (1.4.17-2ubuntu1) ...
+Selecting previously unselected package autoconf.
+Preparing to unpack .../autoconf_2.69-6_all.deb ...
+Unpacking autoconf (2.69-6) ...
+Selecting previously unselected package autotools-dev.
+Preparing to unpack .../autotools-dev_20130810.1_all.deb ...
+Unpacking autotools-dev (20130810.1) ...
+Selecting previously unselected package automake.
+Preparing to unpack .../automake_1%3a1.14.1-2ubuntu1_all.deb ...
+Unpacking automake (1:1.14.1-2ubuntu1) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../xz-utils_5.1.1alpha+20120614-2ubuntu2_amd64.deb ...
+Unpacking xz-utils (5.1.1alpha+20120614-2ubuntu2) ...
+Selecting previously unselected package autopoint.
+Preparing to unpack .../autopoint_0.18.3.1-1ubuntu3.1_all.deb ...
+Unpacking autopoint (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../binutils_2.24-5ubuntu14.2_amd64.deb ...
+Unpacking binutils (2.24-5ubuntu14.2) ...
+Selecting previously unselected package libbison-dev:amd64.
+Preparing to unpack .../libbison-dev_2%3a3.0.2.dfsg-2_amd64.deb ...
+Unpacking libbison-dev:amd64 (2:3.0.2.dfsg-2) ...
+Selecting previously unselected package bison.
+Preparing to unpack .../bison_2%3a3.0.2.dfsg-2_amd64.deb ...
+Unpacking bison (2:3.0.2.dfsg-2) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../libc-dev-bin_2.19-0ubuntu6.15_amd64.deb ...
+Unpacking libc-dev-bin (2.19-0ubuntu6.15) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../linux-libc-dev_3.13.0-170.220_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (3.13.0-170.220) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../libc6-dev_2.19-0ubuntu6.15_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.19-0ubuntu6.15) ...
+Selecting previously unselected package cpp-4.8.
+Preparing to unpack .../cpp-4.8_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking cpp-4.8 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../cpp_4%3a4.8.2-1ubuntu6_amd64.deb ...
+Unpacking cpp (4:4.8.2-1ubuntu6) ...
+Selecting previously unselected package libgcc-4.8-dev:amd64.
+Preparing to unpack .../libgcc-4.8-dev_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libgcc-4.8-dev:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package gcc-4.8.
+Preparing to unpack .../gcc-4.8_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking gcc-4.8 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../gcc_4%3a4.8.2-1ubuntu6_amd64.deb ...
+Unpacking gcc (4:4.8.2-1ubuntu6) ...
+Selecting previously unselected package libstdc++-4.8-dev:amd64.
+Preparing to unpack .../libstdc++-4.8-dev_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking libstdc++-4.8-dev:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package g++-4.8.
+Preparing to unpack .../g++-4.8_4.8.4-2ubuntu1~14.04.4_amd64.deb ...
+Unpacking g++-4.8 (4.8.4-2ubuntu1~14.04.4) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../g++_4%3a4.8.2-1ubuntu6_amd64.deb ...
+Unpacking g++ (4:4.8.2-1ubuntu6) ...
+Selecting previously unselected package make.
+Preparing to unpack .../make_3.81-8.2ubuntu3_amd64.deb ...
+Unpacking make (3.81-8.2ubuntu3) ...
+Selecting previously unselected package libtimedate-perl.
+Preparing to unpack .../libtimedate-perl_2.3000-1_all.deb ...
+Unpacking libtimedate-perl (2.3000-1) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../libdpkg-perl_1.17.5ubuntu5.8_all.deb ...
+Unpacking libdpkg-perl (1.17.5ubuntu5.8) ...
+Selecting previously unselected package patch.
+Preparing to unpack .../patch_2.7.1-4ubuntu2.4_amd64.deb ...
+Unpacking patch (2.7.1-4ubuntu2.4) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../dpkg-dev_1.17.5ubuntu5.8_all.deb ...
+Unpacking dpkg-dev (1.17.5ubuntu5.8) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../build-essential_11.6ubuntu6_amd64.deb ...
+Unpacking build-essential (11.6ubuntu6) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../curl_7.35.0-1ubuntu2.20_amd64.deb ...
+Unpacking curl (7.35.0-1ubuntu2.20) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../libfakeroot_1.20-3ubuntu2_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.20-3ubuntu2) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../fakeroot_1.20-3ubuntu2_amd64.deb ...
+Unpacking fakeroot (1.20-3ubuntu2) ...
+Selecting previously unselected package gettext.
+Preparing to unpack .../gettext_0.18.3.1-1ubuntu3.1_amd64.deb ...
+Unpacking gettext (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package liberror-perl.
+Preparing to unpack .../liberror-perl_0.17-1.1_all.deb ...
+Unpacking liberror-perl (0.17-1.1) ...
+Selecting previously unselected package git-man.
+Preparing to unpack .../git-man_1%3a1.9.1-1ubuntu0.10_all.deb ...
+Unpacking git-man (1:1.9.1-1ubuntu0.10) ...
+Selecting previously unselected package git.
+Preparing to unpack .../git_1%3a1.9.1-1ubuntu0.10_amd64.deb ...
+Unpacking git (1:1.9.1-1ubuntu0.10) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../libalgorithm-diff-perl_1.19.02-3_all.deb ...
+Unpacking libalgorithm-diff-perl (1.19.02-3) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../libalgorithm-diff-xs-perl_0.04-2build4_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-2build4) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../libalgorithm-merge-perl_0.08-2_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-2) ...
+Selecting previously unselected package libasprintf-dev:amd64.
+Preparing to unpack .../libasprintf-dev_0.18.3.1-1ubuntu3.1_amd64.deb ...
+Unpacking libasprintf-dev:amd64 (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../libfile-fcntllock-perl_0.14-2build1_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.14-2build1) ...
+Selecting previously unselected package libgettextpo-dev:amd64.
+Preparing to unpack .../libgettextpo-dev_0.18.3.1-1ubuntu3.1_amd64.deb ...
+Unpacking libgettextpo-dev:amd64 (0.18.3.1-1ubuntu3.1) ...
+Selecting previously unselected package libltdl-dev:amd64.
+Preparing to unpack .../libltdl-dev_2.4.2-1.7ubuntu1_amd64.deb ...
+Unpacking libltdl-dev:amd64 (2.4.2-1.7ubuntu1) ...
+Selecting previously unselected package libtool.
+Preparing to unpack .../libtool_2.4.2-1.7ubuntu1_amd64.deb ...
+Unpacking libtool (2.4.2-1.7ubuntu1) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../manpages-dev_3.54-1ubuntu1_all.deb ...
+Unpacking manpages-dev (3.54-1ubuntu1) ...
+Selecting previously unselected package pkg-config.
+Preparing to unpack .../pkg-config_0.26-1ubuntu4_amd64.deb ...
+Unpacking pkg-config (0.26-1ubuntu4) ...
+Processing triggers for ureadahead (0.100.0-16) ...
+Setting up libroken18-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libasn1-8-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libasprintf0c2:amd64 (0.18.3.1-1ubuntu3.1) ...
+Setting up libkrb5support0:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Setting up libk5crypto3:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Setting up libkeyutils1:amd64 (1.5.6-1) ...
+Setting up libkrb5-3:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Setting up libgssapi-krb5-2:amd64 (1.12+dfsg-2ubuntu5.4) ...
+Setting up libidn11:amd64 (1.28-1ubuntu2.2) ...
+Setting up libhcrypto4-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libheimbase1-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libwind0-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libhx509-5-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libkrb5-26-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libheimntlm0-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libgssapi3-heimdal:amd64 (1.6~git20131207+dfsg-1ubuntu1.2) ...
+Setting up libsasl2-modules-db:amd64 (2.1.25.dfsg1-17build1) ...
+Setting up libsasl2-2:amd64 (2.1.25.dfsg1-17build1) ...
+Setting up libldap-2.4-2:amd64 (2.4.31-1+nmu2ubuntu8.5) ...
+Setting up librtmp0:amd64 (2.4+20121230.gitdf6c518-1ubuntu0.1) ...
+Setting up libcurl3-gnutls:amd64 (7.35.0-1ubuntu2.20) ...
+Setting up libedit2:amd64 (3.1-20130712-2) ...
+Setting up libglib2.0-0:amd64 (2.40.2-0ubuntu1.1) ...
+No schema files found: doing nothing.
+Setting up libxau6:amd64 (1:1.0.8-1) ...
+Setting up libxdmcp6:amd64 (1:1.1.1-1) ...
+Setting up libxcb1:amd64 (1.10-2ubuntu1) ...
+Setting up libx11-data (2:1.6.2-1ubuntu2.1) ...
+Setting up libx11-6:amd64 (2:1.6.2-1ubuntu2.1) ...
+Setting up libxext6:amd64 (2:1.3.2-1ubuntu0.0.14.04.1) ...
+Setting up libxml2:amd64 (2.9.1+dfsg1-3ubuntu4.13) ...
+Setting up libxmuu1:amd64 (2:1.1.1-1) ...
+Setting up sgml-base (1.26+nmu4ubuntu1) ...
+Setting up libasan0:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up libatomic1:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up libgmp10:amd64 (2:5.1.3+dfsg-1ubuntu1) ...
+Setting up libisl10:amd64 (0.12.2-1) ...
+Setting up libcloog-isl4:amd64 (0.18.2-1) ...
+Setting up libcroco3:amd64 (0.6.8-2ubuntu1) ...
+Setting up libcurl3:amd64 (7.35.0-1ubuntu2.20) ...
+Setting up libunistring0:amd64 (0.9.3-5ubuntu3) ...
+Setting up libgettextpo0:amd64 (0.18.3.1-1ubuntu3.1) ...
+Setting up libgomp1:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up libitm1:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up libltdl7:amd64 (2.4.2-1.7ubuntu1) ...
+Setting up libmpfr4:amd64 (3.1.2-1) ...
+Setting up libquadmath0:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up libsigsegv2:amd64 (2.10-2) ...
+Setting up libtsan0:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up libmpc3:amd64 (1.0.1-1ubuntu1) ...
+Setting up openssl (1.0.1f-1ubuntu2.27) ...
+Setting up ca-certificates (20170717~14.04.2) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+Setting up gettext-base (0.18.3.1-1ubuntu3.1) ...
+Setting up krb5-locales (1.12+dfsg-2ubuntu5.4) ...
+Setting up libglib2.0-data (2.40.2-0ubuntu1.1) ...
+Setting up libsasl2-modules:amd64 (2.1.25.dfsg1-17build1) ...
+Setting up manpages (3.54-1ubuntu1) ...
+Setting up openssh-client (1:6.6p1-2ubuntu2.13) ...
+Setting up rsync (3.1.0-2ubuntu0.4) ...
+ Removing any system startup links for /etc/init.d/rsync ...
+update-rc.d: warning: default stop runlevel arguments (0 1 6) do not match rsync Default-Stop values (none)
+ Adding system startup for /etc/init.d/rsync ...
+   /etc/rc0.d/K20rsync -> ../init.d/rsync
+   /etc/rc1.d/K20rsync -> ../init.d/rsync
+   /etc/rc6.d/K20rsync -> ../init.d/rsync
+   /etc/rc2.d/S20rsync -> ../init.d/rsync
+   /etc/rc3.d/S20rsync -> ../init.d/rsync
+   /etc/rc4.d/S20rsync -> ../init.d/rsync
+   /etc/rc5.d/S20rsync -> ../init.d/rsync
+invoke-rc.d: policy-rc.d denied execution of restart.
+Setting up shared-mime-info (1.2-0ubuntu3) ...
+Setting up xauth (1:1.0.7-1ubuntu1) ...
+Setting up xml-core (0.13+nmu2) ...
+Setting up m4 (1.4.17-2ubuntu1) ...
+Setting up autoconf (2.69-6) ...
+Setting up autotools-dev (20130810.1) ...
+Setting up automake (1:1.14.1-2ubuntu1) ...
+update-alternatives: using /usr/bin/automake-1.14 to provide /usr/bin/automake (automake) in auto mode
+Setting up xz-utils (5.1.1alpha+20120614-2ubuntu2) ...
+update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+Setting up autopoint (0.18.3.1-1ubuntu3.1) ...
+Setting up binutils (2.24-5ubuntu14.2) ...
+Setting up libbison-dev:amd64 (2:3.0.2.dfsg-2) ...
+Setting up bison (2:3.0.2.dfsg-2) ...
+update-alternatives: using /usr/bin/bison.yacc to provide /usr/bin/yacc (yacc) in auto mode
+Setting up libc-dev-bin (2.19-0ubuntu6.15) ...
+Setting up linux-libc-dev:amd64 (3.13.0-170.220) ...
+Setting up libc6-dev:amd64 (2.19-0ubuntu6.15) ...
+Setting up cpp-4.8 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up cpp (4:4.8.2-1ubuntu6) ...
+Setting up libgcc-4.8-dev:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up gcc-4.8 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up gcc (4:4.8.2-1ubuntu6) ...
+Setting up libstdc++-4.8-dev:amd64 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up g++-4.8 (4.8.4-2ubuntu1~14.04.4) ...
+Setting up g++ (4:4.8.2-1ubuntu6) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up make (3.81-8.2ubuntu3) ...
+Setting up libtimedate-perl (2.3000-1) ...
+Setting up libdpkg-perl (1.17.5ubuntu5.8) ...
+Setting up patch (2.7.1-4ubuntu2.4) ...
+Setting up dpkg-dev (1.17.5ubuntu5.8) ...
+Setting up build-essential (11.6ubuntu6) ...
+Setting up curl (7.35.0-1ubuntu2.20) ...
+Setting up libfakeroot:amd64 (1.20-3ubuntu2) ...
+Setting up fakeroot (1.20-3ubuntu2) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+Setting up gettext (0.18.3.1-1ubuntu3.1) ...
+Setting up liberror-perl (0.17-1.1) ...
+Setting up git-man (1:1.9.1-1ubuntu0.10) ...
+Setting up git (1:1.9.1-1ubuntu0.10) ...
+Setting up libalgorithm-diff-perl (1.19.02-3) ...
+Setting up libalgorithm-diff-xs-perl (0.04-2build4) ...
+Setting up libalgorithm-merge-perl (0.08-2) ...
+Setting up libasprintf-dev:amd64 (0.18.3.1-1ubuntu3.1) ...
+Setting up libfile-fcntllock-perl (0.14-2build1) ...
+Setting up libgettextpo-dev:amd64 (0.18.3.1-1ubuntu3.1) ...
+Setting up libltdl-dev:amd64 (2.4.2-1.7ubuntu1) ...
+Setting up libtool (2.4.2-1.7ubuntu1) ...
+Setting up manpages-dev (3.54-1ubuntu1) ...
+Setting up pkg-config (0.26-1ubuntu4) ...
+Processing triggers for libc-bin (2.19-0ubuntu6.15) ...
+Processing triggers for ca-certificates (20170717~14.04.2) ...
+Updating certificates in /etc/ssl/certs... 148 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d....done.
+Processing triggers for ureadahead (0.100.0-16) ...
+Processing triggers for sgml-base (1.26+nmu4ubuntu1) ...
+Cloning into '/tmp/util-linux'...
+
+Generating build-system with:
+   autopoint:  /usr/bin/autopoint (GNU gettext-tools) 0.18.3
+   aclocal:    aclocal (GNU automake) 1.14.1
+   autoconf:   autoconf (GNU Autoconf) 2.69
+   autoheader: autoheader (GNU Autoconf) 2.69
+   automake:   automake (GNU automake) 1.14.1
+   libtoolize: libtoolize (GNU libtool) 2.4.2
+   bison:      bison (GNU Bison) 3.0.2
+Copying file ABOUT-NLS
+Copying file config/config.rpath
+Copying file m4/codeset.m4
+Copying file m4/fcntl-o.m4
+Copying file m4/gettext.m4
+Copying file m4/glibc2.m4
+Copying file m4/glibc21.m4
+Copying file m4/iconv.m4
+Copying file m4/intdiv0.m4
+Copying file m4/intl.m4
+Copying file m4/intldir.m4
+Copying file m4/intlmacosx.m4
+Copying file m4/intmax.m4
+Copying file m4/inttypes-pri.m4
+Copying file m4/inttypes_h.m4
+Copying file m4/lcmessage.m4
+Copying file m4/lib-ld.m4
+Copying file m4/lib-link.m4
+Copying file m4/lib-prefix.m4
+Copying file m4/lock.m4
+Copying file m4/longlong.m4
+Copying file m4/nls.m4
+Copying file m4/po.m4
+Copying file m4/printf-posix.m4
+Copying file m4/progtest.m4
+Copying file m4/size_max.m4
+Copying file m4/stdint_h.m4
+Copying file m4/threadlib.m4
+Copying file m4/uintmax_t.m4
+Copying file m4/visibility.m4
+Copying file m4/wchar_t.m4
+Copying file m4/wint_t.m4
+Copying file m4/xsize.m4
+Copying file po/Makefile.in.in
+Copying file po/Makevars.template
+Copying file po/Rules-quot
+Copying file po/boldquot.sed
+Copying file po/en@boldquot.header
+Copying file po/en@quot.header
+Copying file po/insert-header.sin
+Copying file po/quot.sed
+Copying file po/remove-potcdate.sin
+libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, `config'.
+libtoolize: linking file `config/ltmain.sh'
+libtoolize: putting macros in AC_CONFIG_MACRO_DIR, `m4'.
+libtoolize: linking file `m4/libtool.m4'
+libtoolize: linking file `m4/ltoptions.m4'
+libtoolize: linking file `m4/ltsugar.m4'
+libtoolize: linking file `m4/ltversion.m4'
+libtoolize: linking file `m4/lt~obsolete.m4'
+configure.ac:18: installing 'config/ar-lib'
+configure.ac:13: installing 'config/compile'
+configure.ac:109: installing 'config/config.guess'
+configure.ac:109: installing 'config/config.sub'
+configure.ac:14: installing 'config/install-sh'
+configure.ac:14: installing 'config/missing'
+sys-utils/Makemodule.am:198: warning: addprefix sys-utils/,$(SETARCH_LINKS: non-POSIX variable name
+sys-utils/Makemodule.am:198: (probably a GNU make extension)
+Makefile.am:88:   'sys-utils/Makemodule.am' included from here
+Makefile.am: installing 'config/depcomp'
+configure.ac: installing 'config/ylwrap'
+libmount/python/Makemodule.am:9: installing 'config/py-compile'
+Makefile.am:80:   'libmount/Makemodule.am' included from here
+libmount/Makemodule.am:4:   'libmount/python/Makemodule.am' included from here
+
+Now type './configure' and 'make' to compile.
+
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking whether gcc understands -c and -o together... yes
+checking how to run the C preprocessor... gcc -E
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking minix/config.h usability... no
+checking minix/config.h presence... no
+checking for minix/config.h... no
+checking whether it is safe to define __EXTENSIONS__... yes
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+checking for mawk... mawk
+checking whether make sets $(MAKE)... yes
+checking for style of include used by make... GNU
+checking whether make supports nested variables... yes
+checking how to create a pax tar archive... gnutar
+checking dependency style of gcc... gcc3
+checking whether make supports nested variables... (cached) yes
+checking for ar... ar
+checking the archiver (ar) interface... ar
+configure: Default --exec-prefix detected.
+configure:   --bindir defaults to /bin
+configure:   --sbindir defaults to /sbin
+configure:   --libdir defaults to /lib
+checking for gcc option to accept ISO C99... -std=gnu99
+checking for gcc -std=gnu99 option to accept ISO Standard C... (cached) -std=gnu99
+checking for bison... bison -y
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+checking for an ANSI C-conforming const... yes
+checking for working volatile... yes
+checking whether byte ordering is bigendian... no
+checking whether compiler handles -fno-common... yes
+checking whether compiler handles -Wall... yes
+checking whether compiler handles -Werror=sequence-point... yes
+checking whether compiler handles -Wextra... yes
+checking whether compiler handles -Wextra-semi... no
+checking whether compiler handles -Wembedded-directive... no
+checking whether compiler handles -Wmissing-declarations... yes
+checking whether compiler handles -Wmissing-parameter-type... yes
+checking whether compiler handles -Wmissing-prototypes... yes
+checking whether compiler handles -Wno-missing-field-initializers... yes
+checking whether compiler handles -Wredundant-decls... yes
+checking whether compiler handles -Wsign-compare... yes
+checking whether compiler handles -Wtype-limits... yes
+checking whether compiler handles -Wuninitialized... yes
+checking whether compiler handles -Wunused-but-set-parameter... yes
+checking whether compiler handles -Wunused-but-set-variable... yes
+checking whether compiler handles -Wunused-parameter... yes
+checking whether compiler handles -Wunused-result... yes
+checking whether compiler handles -Wunused-variable... yes
+checking whether compiler handles -Wnested-externs... yes
+checking whether compiler handles -Wpointer-arith... yes
+checking whether compiler handles -Wstrict-prototypes... yes
+checking whether compiler handles -Wformat-security... yes
+checking whether compiler handles -Wimplicit-function-declaration... yes
+checking whether compiler handles -Wdiscarded-qualifiers... no
+checking whether compiler handles -Wno-clobbered... yes
+checking whether compiler handles -Wno-cast-function-type... yes
+checking whether compiler handles -Wno-unused-parameter... yes
+checking how to print strings... printf
+checking for a sed that does not truncate output... /bin/sed
+checking for fgrep... /bin/grep -F
+checking for ld used by gcc -std=gnu99... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+checking the name lister (/usr/bin/nm -B) interface... BSD nm
+checking whether ln -s works... yes
+checking the maximum length of command line arguments... 1572864
+checking whether the shell understands some XSI constructs... yes
+checking whether the shell understands "+="... yes
+checking how to convert x86_64-unknown-linux-gnu file names to x86_64-unknown-linux-gnu format... func_convert_file_noop
+checking how to convert x86_64-unknown-linux-gnu file names to toolchain format... func_convert_file_noop
+checking for /usr/bin/ld option to reload object files... -r
+checking for objdump... objdump
+checking how to recognize dependent libraries... pass_all
+checking for dlltool... no
+checking how to associate runtime and link libraries... printf %s\n
+checking for archiver @FILE support... @
+checking for strip... strip
+checking for ranlib... ranlib
+checking command to parse /usr/bin/nm -B output from gcc -std=gnu99 object... ok
+checking for sysroot... no
+checking for mt... mt
+checking if mt is a manifest tool... no
+checking for dlfcn.h... yes
+checking for objdir... .libs
+checking if gcc -std=gnu99 supports -fno-rtti -fno-exceptions... no
+checking for gcc -std=gnu99 option to produce PIC... -fPIC -DPIC
+checking if gcc -std=gnu99 PIC flag -fPIC -DPIC works... yes
+checking if gcc -std=gnu99 static flag -static works... yes
+checking if gcc -std=gnu99 supports -c -o file.o... yes
+checking if gcc -std=gnu99 supports -c -o file.o... (cached) yes
+checking whether the gcc -std=gnu99 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking whether -lc should be explicitly linked in... no
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking whether stripping libraries is possible... yes
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... yes
+checking linker version script flag... --version-script
+checking if version scripts can use complex wildcards... yes
+checking for pkg-config... /usr/bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+checking whether to build gtk-doc documentation... no
+checking for gtkdoc-check... no
+checking for xsltproc... no
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+checking whether to enable assertions... yes
+checking whether struct tm is in sys/time.h or time.h... time.h
+checking for struct tm.tm_zone... yes
+checking whether NLS is requested... yes
+checking for msgfmt... /usr/bin/msgfmt
+checking for gmsgfmt... /usr/bin/msgfmt
+checking for xgettext... /usr/bin/xgettext
+checking for msgmerge... /usr/bin/msgmerge
+checking for ld used by gcc -std=gnu99... /usr/bin/ld -m elf_x86_64
+checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+checking for shared library run path origin... done
+checking for CFPreferencesCopyAppValue... no
+checking for CFLocaleCopyCurrent... no
+checking for GNU gettext in libc... yes
+checking whether to use NLS... yes
+checking where the gettext function comes from... libc
+checking for linux/compiler.h... no
+checking for linux/blkpg.h... yes
+checking for linux/major.h... yes
+checking asm/io.h usability... no
+checking asm/io.h presence... no
+checking for asm/io.h... no
+checking err.h usability... yes
+checking err.h presence... yes
+checking for err.h... yes
+checking errno.h usability... yes
+checking errno.h presence... yes
+checking for errno.h... yes
+checking fcntl.h usability... yes
+checking fcntl.h presence... yes
+checking for fcntl.h... yes
+checking getopt.h usability... yes
+checking getopt.h presence... yes
+checking for getopt.h... yes
+checking for inttypes.h... (cached) yes
+checking lastlog.h usability... yes
+checking lastlog.h presence... yes
+checking for lastlog.h... yes
+checking libutil.h usability... no
+checking libutil.h presence... no
+checking for libutil.h... no
+checking linux/btrfs.h usability... yes
+checking linux/btrfs.h presence... yes
+checking for linux/btrfs.h... yes
+checking linux/cdrom.h usability... yes
+checking linux/cdrom.h presence... yes
+checking for linux/cdrom.h... yes
+checking linux/falloc.h usability... yes
+checking linux/falloc.h presence... yes
+checking for linux/falloc.h... yes
+checking linux/watchdog.h usability... yes
+checking linux/watchdog.h presence... yes
+checking for linux/watchdog.h... yes
+checking linux/fd.h usability... yes
+checking linux/fd.h presence... yes
+checking for linux/fd.h... yes
+checking linux/raw.h usability... yes
+checking linux/raw.h presence... yes
+checking for linux/raw.h... yes
+checking linux/tiocl.h usability... yes
+checking linux/tiocl.h presence... yes
+checking for linux/tiocl.h... yes
+checking linux/version.h usability... yes
+checking linux/version.h presence... yes
+checking for linux/version.h... yes
+checking linux/securebits.h usability... yes
+checking linux/securebits.h presence... yes
+checking for linux/securebits.h... yes
+checking linux/net_namespace.h usability... no
+checking linux/net_namespace.h presence... no
+checking for linux/net_namespace.h... no
+checking locale.h usability... yes
+checking locale.h presence... yes
+checking for locale.h... yes
+checking mntent.h usability... yes
+checking mntent.h presence... yes
+checking for mntent.h... yes
+checking net/if.h usability... yes
+checking net/if.h presence... yes
+checking for net/if.h... yes
+checking net/if_dl.h usability... no
+checking net/if_dl.h presence... no
+checking for net/if_dl.h... no
+checking netinet/in.h usability... yes
+checking netinet/in.h presence... yes
+checking for netinet/in.h... yes
+checking paths.h usability... yes
+checking paths.h presence... yes
+checking for paths.h... yes
+checking pty.h usability... yes
+checking pty.h presence... yes
+checking for pty.h... yes
+checking security/pam_appl.h usability... no
+checking security/pam_appl.h presence... no
+checking for security/pam_appl.h... no
+checking for stdint.h... (cached) yes
+checking stdio_ext.h usability... yes
+checking stdio_ext.h presence... yes
+checking for stdio_ext.h... yes
+checking for stdlib.h... (cached) yes
+checking endian.h usability... yes
+checking endian.h presence... yes
+checking for endian.h... yes
+checking byteswap.h usability... yes
+checking byteswap.h presence... yes
+checking for byteswap.h... yes
+checking sys/endian.h usability... no
+checking sys/endian.h presence... no
+checking for sys/endian.h... no
+checking sys/disk.h usability... no
+checking sys/disk.h presence... no
+checking for sys/disk.h... no
+checking sys/disklabel.h usability... no
+checking sys/disklabel.h presence... no
+checking for sys/disklabel.h... no
+checking sys/file.h usability... yes
+checking sys/file.h presence... yes
+checking for sys/file.h... yes
+checking sys/io.h usability... yes
+checking sys/io.h presence... yes
+checking for sys/io.h... yes
+checking sys/ioccom.h usability... no
+checking sys/ioccom.h presence... no
+checking for sys/ioccom.h... no
+checking sys/ioctl.h usability... yes
+checking sys/ioctl.h presence... yes
+checking for sys/ioctl.h... yes
+checking sys/mkdev.h usability... no
+checking sys/mkdev.h presence... no
+checking for sys/mkdev.h... no
+checking sys/mount.h usability... yes
+checking sys/mount.h presence... yes
+checking for sys/mount.h... yes
+checking sys/param.h usability... yes
+checking sys/param.h presence... yes
+checking for sys/param.h... yes
+checking sys/prctl.h usability... yes
+checking sys/prctl.h presence... yes
+checking for sys/prctl.h... yes
+checking sys/resource.h usability... yes
+checking sys/resource.h presence... yes
+checking for sys/resource.h... yes
+checking sys/signalfd.h usability... yes
+checking sys/signalfd.h presence... yes
+checking for sys/signalfd.h... yes
+checking sys/socket.h usability... yes
+checking sys/socket.h presence... yes
+checking for sys/socket.h... yes
+checking sys/sockio.h usability... no
+checking sys/sockio.h presence... no
+checking for sys/sockio.h... no
+checking for sys/stat.h... (cached) yes
+checking sys/sysmacros.h usability... yes
+checking sys/sysmacros.h presence... yes
+checking for sys/sysmacros.h... yes
+checking sys/swap.h usability... yes
+checking sys/swap.h presence... yes
+checking for sys/swap.h... yes
+checking sys/syscall.h usability... yes
+checking sys/syscall.h presence... yes
+checking for sys/syscall.h... yes
+checking sys/time.h usability... yes
+checking sys/time.h presence... yes
+checking for sys/time.h... yes
+checking sys/timex.h usability... yes
+checking sys/timex.h presence... yes
+checking for sys/timex.h... yes
+checking sys/ttydefaults.h usability... yes
+checking sys/ttydefaults.h presence... yes
+checking for sys/ttydefaults.h... yes
+checking for sys/types.h... (cached) yes
+checking sys/ucred.h usability... no
+checking sys/ucred.h presence... no
+checking for sys/ucred.h... no
+checking sys/un.h usability... yes
+checking sys/un.h presence... yes
+checking for sys/un.h... yes
+checking for unistd.h... (cached) yes
+checking shadow.h usability... yes
+checking shadow.h presence... yes
+checking for shadow.h... yes
+checking utmp.h usability... yes
+checking utmp.h presence... yes
+checking for utmp.h... yes
+checking utmpx.h usability... yes
+checking utmpx.h presence... yes
+checking for utmpx.h... yes
+checking for linux/fs.h... no
+checking for linux/gsmmux.h... no
+checking for security/pam_misc.h... no
+checking linux/blkzoned.h usability... no
+checking linux/blkzoned.h presence... no
+checking for linux/blkzoned.h... no
+checking for security/openpam.h... no
+checking langinfo.h usability... yes
+checking langinfo.h presence... yes
+checking for langinfo.h... yes
+checking whether langinfo.h defines ALTMON_x constants... no
+checking whether langinfo.h defines _NL_ABALTMON_x constants... no
+checking for struct termios.c_line... yes
+checking for struct stat.st_mtim.tv_nsec... yes
+checking whether _NL_TIME_WEEK_1STDAY is declared... yes
+checking whether llseek is declared... no
+checking whether lseek64 is declared... yes
+checking whether environ is declared... yes
+checking whether strsignal is declared... yes
+checking whether TIOCGLCKTRMIOS is declared... yes
+checking whether SOCK_CLOEXEC is declared... yes
+checking whether SOCK_NONBLOCK is declared... yes
+checking whether SO_PASSCRED is declared... yes
+checking for clearenv... yes
+checking for __fpurge... yes
+checking for fpurge... no
+checking for __fpending... yes
+checking for secure_getenv... yes
+checking for __secure_getenv... no
+checking for eaccess... yes
+checking for err... yes
+checking for errx... yes
+checking for explicit_bzero... no
+checking for fsync... yes
+checking for utimensat... yes
+checking for getdomainname... yes
+checking for getdtablesize... yes
+checking for getexecname... no
+checking for getmntinfo... no
+checking for getrandom... no
+checking for getrlimit... yes
+checking for getsgnam... yes
+checking for inotify_init... yes
+checking for jrand48... yes
+checking for lchown... yes
+checking for llseek... yes
+checking for lseek64... yes
+checking for mempcpy... yes
+checking for mkostemp... yes
+checking for nanosleep... yes
+checking for ntp_gettime... yes
+checking for personality... yes
+checking for posix_fadvise... yes
+checking for prctl... yes
+checking for qsort_r... yes
+checking for rpmatch... yes
+checking for scandirat... yes
+checking for setprogname... no
+checking for setresgid... yes
+checking for setresuid... yes
+checking for sched_setattr... no
+checking for sched_setscheduler... yes
+checking for sigqueue... yes
+checking for srandom... yes
+checking for strnchr... no
+checking for strndup... yes
+checking for strnlen... yes
+checking for sysconf... yes
+checking for sysinfo... yes
+checking for timegm... yes
+checking for usleep... yes
+checking for vwarnx... yes
+checking for warn... yes
+checking for warnx... yes
+checking for _LARGEFILE_SOURCE value needed for large files... no
+checking for openat... yes
+checking for fstatat... yes
+checking for unlinkat... yes
+checking for ioperm... yes
+checking for iopl... yes
+checking for futimens... yes
+checking for inotify_init1... yes
+checking for open_memstream... yes
+checking for reboot... yes
+checking for updwtmpx... yes
+checking for updwtmpx... (cached) yes
+checking for getusershell... yes
+checking for syscall setns... SYS_setns
+checking for isnan... yes
+checking for clock_gettime... yes
+checking for timer_create... no
+checking for timer_create in -lrt... yes
+checking for rtas_get_sysparm in -lrtas... no
+checking for struct sockaddr.sa_len... no
+checking for library containing socket... none required
+checking for dirfd... yes
+checking whether program_invocation_short_name is defined... yes
+checking whether __progname is defined... yes
+configure: WARNING: disable all programs by default
+checking whether the target supports thread-local storage... yes
+checking scanf string alloc modifiers... (%ms) yes
+checking for openpty in -lutil... yes
+checking for union semun... no
+checking for loff_t... yes
+checking wchar_t support... yes
+checking for cpu_set_t... yes
+checking for sighandler_t... yes
+checking whether CPU_ALLOC is declared... yes
+checking crypt.h usability... yes
+checking crypt.h presence... yes
+checking for crypt.h... yes
+checking for udev_new in -ludev... no
+checking for ncursesw6-config... no
+checking for ncursesw5-config... ncursesw5-config
+checking ncursesw/ncurses.h usability... no
+checking ncursesw/ncurses.h presence... no
+checking for ncursesw/ncurses.h... no
+checking ncursesw/term.h usability... no
+checking ncursesw/term.h presence... no
+checking for ncursesw/term.h... no
+checking ncurses.h usability... no
+checking ncurses.h presence... no
+checking for ncurses.h... no
+checking term.h usability... no
+checking term.h presence... no
+checking for term.h... no
+checking for ncurses6-config... no
+checking for ncurses5-config... ncurses5-config
+checking ncurses/ncurses.h usability... no
+checking ncurses/ncurses.h presence... no
+checking for ncurses/ncurses.h... no
+checking ncurses/term.h usability... no
+checking ncurses/term.h presence... no
+checking for ncurses/term.h... no
+checking for ncurses.h... (cached) no
+checking for term.h... (cached) no
+checking for TINFO... no
+checking for tgetent in -ltinfo... no
+checking for readline in -lreadline... no
+checking for unshare... yes
+checking for setns... yes
+checking for capng_apply in -lcap-ng... no
+checking for PCRE... no
+checking for crc32 in -lz... no
+configure: WARNING: hwclock disabled; not building hwclock_cmos
+checking for swapon... yes
+checking for swapoff... yes
+checking for LIBUSER... no
+checking for SYSTEMD... no
+checking for SYSTEMD_DAEMON... no
+checking for SYSTEMD_JOURNAL... no
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating libblkid/docs/Makefile
+config.status: creating libblkid/docs/version.xml
+config.status: creating libblkid/src/blkid.h
+config.status: creating libfdisk/docs/Makefile
+config.status: creating libfdisk/docs/version.xml
+config.status: creating libfdisk/src/libfdisk.h
+config.status: creating libmount/docs/Makefile
+config.status: creating libmount/docs/version.xml
+config.status: creating libmount/src/libmount.h
+config.status: creating libsmartcols/docs/Makefile
+config.status: creating libsmartcols/docs/version.xml
+config.status: creating libsmartcols/src/libsmartcols.h
+config.status: creating po/Makefile.in
+config.status: creating config.h
+config.status: executing depfiles commands
+config.status: executing libtool commands
+config.status: executing po-directories commands
+config.status: creating po/POTFILES
+config.status: creating po/Makefile
+
+	util-linux  UNKNOWN
+
+	prefix:            /usr
+	exec prefix:       ${prefix}
+
+	runstatedir:       ${localstatedir}/run
+	bindir:            /bin
+	sbindir:           /sbin
+	libdir:            /lib
+	includedir:        ${prefix}/include
+	usrbin_execdir:    ${exec_prefix}/bin
+	usrsbin_execdir:   ${exec_prefix}/sbin
+	usrlib_execdir:    ${exec_prefix}/lib
+
+	compiler:          gcc -std=gnu99
+	cflags:            -g -O2
+	suid cflags:       
+	ldflags:           
+	suid ldflags:      
+	ASAN enabled:      no
+
+	Python:            
+	Python version:    
+	Python libs:       
+
+	Bash completions:  ${datarootdir}/bash-completion/completions
+	Systemd support:   no
+	Systemd unitdir:   no
+	Btrfs support:     yes
+	Wide-char support: yes
+
+	warnings:
+
+ -fno-common -Wall -Werror=sequence-point -Wextra -Wmissing-declarations -Wmissing-parameter-type -Wmissing-prototypes -Wno-missing-field-initializers -Wredundant-decls -Wsign-compare -Wtype-limits -Wuninitialized -Wunused-but-set-parameter -Wunused-but-set-variable -Wunused-parameter -Wunused-result -Wunused-variable -Wnested-externs -Wpointer-arith -Wstrict-prototypes -Wformat-security -Wimplicit-function-declaration
+
+	Type 'make' or 'make <utilname>' to compile.
+
+  CC       sys-utils/nsenter.o
+  CC       lib/libcommon_la-blkdev.lo
+  CC       lib/libcommon_la-canonicalize.lo
+  CC       lib/libcommon_la-crc32.lo
+  CC       lib/libcommon_la-crc32c.lo
+  CC       lib/libcommon_la-env.lo
+  CC       lib/libcommon_la-idcache.lo
+  CC       lib/libcommon_la-fileutils.lo
+  CC       lib/libcommon_la-ismounted.lo
+  CC       lib/libcommon_la-color-names.lo
+  CC       lib/libcommon_la-mangle.lo
+  CC       lib/libcommon_la-match.lo
+  CC       lib/libcommon_la-mbsalign.lo
+  CC       lib/libcommon_la-mbsedit.lo
+  CC       lib/libcommon_la-md5.lo
+  CC       lib/libcommon_la-pager.lo
+  YACC     lib/parse-date.c
+  CC       lib/libcommon_la-parse-date.lo
+  CC       lib/libcommon_la-pwdutils.lo
+  CC       lib/libcommon_la-randutils.lo
+  CC       lib/libcommon_la-setproctitle.lo
+  CC       lib/libcommon_la-strutils.lo
+  CC       lib/libcommon_la-timeutils.lo
+  CC       lib/libcommon_la-ttyutils.lo
+  CC       lib/libcommon_la-exec_shell.lo
+  CC       lib/libcommon_la-strv.lo
+  CC       lib/libcommon_la-sha1.lo
+  CC       lib/libcommon_la-signames.lo
+  CC       lib/libcommon_la-linux_version.lo
+  CC       lib/libcommon_la-loopdev.lo
+  CC       lib/libcommon_la-plymouth-ctrl.lo
+  CC       lib/libcommon_la-cpuset.lo
+  CC       lib/libcommon_la-path.lo
+  CC       lib/libcommon_la-procutils.lo
+  CC       lib/libcommon_la-sysfs.lo
+  CCLD     libcommon.la
+  CCLD     nsenter
+'nsenter' -> '/build/nsenter'

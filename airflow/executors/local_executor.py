@@ -54,10 +54,12 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import State
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
+import requests
+from airflow.utils.dag_processing import SimpleTaskInstance
 
 
 class AsyncioWorker(LoggingMixin):
-    def __init__(self, result_queue, loop):
+    def __init__(self, result_queue, loop: asyncio.events.AbstractEventLoop):
         """
         :param result_queue: the queue to store result states tuples (key, State)
         :type result_queue: multiprocessing.Queue
@@ -69,9 +71,10 @@ class AsyncioWorker(LoggingMixin):
         self.command = None
         self.loop = loop
 
-    def execute_work(self, key, command):
+    async def execute_work(self, key, command, task_instance: SimpleTaskInstance = None):
         """
         Executes command received and stores result state in queue.
+        :param task_instance:
         :param key: the key to identify the TI
         :type key: tuple(dag_id, task_id, execution_date)
         :param command: the command to execute
@@ -79,22 +82,21 @@ class AsyncioWorker(LoggingMixin):
         """
         if key is None:
             return
-        self.log.info("%s running %s", self.__class__.__name__, command)
+        self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
-            foo = asyncio.create_subprocess_exec(
-                *command,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                loop=self.loop
-            )
-            if foo.returncode != 0:
+            req = 'http://localhost:5000'
+            params = {
+                "task_id": task_instance.task_id(),
+                "dag_id": task_instance.dag_id(),
+            }
+            future = self.loop.run_in_executor(None, requests.get, req, params)
+            resp = await future
+            if resp.status_code != 200:
                 raise asyncio.InvalidStateError()
-            state = State.SUCCESS
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
-        self.result_queue.put((key, state))
+            self.result_queue.put((key, state))
 
 
 class LocalWorker(multiprocessing.Process, LoggingMixin):
@@ -182,7 +184,7 @@ class LocalExecutor(BaseExecutor):
             self.executor.workers_used = 0
             self.executor.workers_active = 0
 
-        def execute_async(self, key, command):
+        def execute_async(self, key, command, task_instance=None):
             """
             :param key: the key to identify the TI
             :type key: tuple(dag_id, task_id, execution_date)
@@ -191,8 +193,10 @@ class LocalExecutor(BaseExecutor):
             """
             self.executor.workers_used += 1
             self.executor.workers_active += 1
-            self.loop.run_in_executor(executor=self.pool_executor,
-                                      func=self.worker.execute_work(key=key, command=command))
+            self.loop.run_until_complete(
+                self.worker.execute_work(key=key, command=command, task_instance=task_instance))
+            # self.loop.run_in_executor(executor=self.pool_executor,
+            #                           func=self.worker.execute_work(key=key, command=command))
 
         def sync(self):
             while not self.executor.result_queue.empty():
@@ -224,7 +228,7 @@ class LocalExecutor(BaseExecutor):
             for w in self.executor.workers:
                 w.start()
 
-        def execute_async(self, key, command):
+        def execute_async(self, key, command, task_instance=None):
             """
             :param key: the key to identify the TI
             :type key: tuple(dag_id, task_id, execution_date)
@@ -264,8 +268,8 @@ class LocalExecutor(BaseExecutor):
 
         self.impl.start()
 
-    def execute_async(self, key, command, queue=None, executor_config=None):
-        self.impl.execute_async(key=key, command=command)
+    def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
+        self.impl.execute_async(key=key, command=command, task_instance=task_instance)
 
     def sync(self):
         self.impl.sync()

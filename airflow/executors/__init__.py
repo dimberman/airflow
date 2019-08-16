@@ -59,6 +59,7 @@ class Executors:
     CeleryExecutor = "CeleryExecutor"
     DaskExecutor = "DaskExecutor"
     KubernetesExecutor = "KubernetesExecutor"
+    KnativeExecutor = "KnativeExecutor"
 
 
 def _get_executor(executor_name):
@@ -80,6 +81,10 @@ def _get_executor(executor_name):
     elif executor_name == Executors.KubernetesExecutor:
         from airflow.executors.kubernetes_executor import KubernetesExecutor
         return KubernetesExecutor()
+    elif executor_name == Executors.KnativeExecutor:
+        from airflow.executors.knative_executor import KnativeExecutor
+        import asyncio
+        return KnativeExecutor(asyncio.get_event_loop())
     else:
         # Loading plugins
         _integrate_plugins()

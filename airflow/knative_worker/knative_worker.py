@@ -1,91 +1,59 @@
-import importlib
+import asyncio
 import logging
-
 import os
-import subprocess
-import textwrap
-import random
-import string
-from importlib import import_module
-import functools
-
-import getpass
-import reprlib
-import argparse
-from argparse import RawTextHelpFormatter
 from datetime import datetime
-from airflow.utils.timezone import parse as parsedate
-import json
-from tabulate import tabulate
-
-import daemon
-from daemon.pidfile import TimeoutPIDLockFile
-import signal
-import sys
-import threading
-import traceback
-import time
-import psutil
-import re
-from urllib.parse import urlunparse
 from typing import Any
 
-import airflow
-from airflow import api
-from airflow import jobs, settings
-from airflow import configuration as conf
-from airflow.exceptions import AirflowException, AirflowWebServerTimeout
-from airflow.executors import get_default_executor
-from airflow.models import (
-    Connection, DagModel, DagBag, DagPickle, TaskInstance, DagRun, Variable, DAG
-)
-
-from parameterized import parameterized, param
-from sqlalchemy.orm.session import Session
-from airflow import models, settings, configuration
-from airflow.contrib.sensors.python_sensor import PythonSensor
-from airflow.exceptions import AirflowException, AirflowSkipException
-from airflow.models import DAG, TaskFail, TaskInstance as TI, TaskReschedule, DagRun
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
-from airflow.ti_deps.deps.trigger_rule_dep import TriggerRuleDep
-from airflow.utils import timezone
-from airflow.utils.db import create_session
-from airflow.utils.state import State
-from tests.models import DEFAULT_DATE
-
-from airflow.ti_deps.dep_context import (DepContext, SCHEDULER_DEPS)
-from airflow.utils import cli as cli_utils, db
-from airflow.utils.net import get_hostname
-from airflow.utils.log.logging_mixin import (LoggingMixin, redirect_stderr,
-                                             redirect_stdout)
-from airflow.www.app import cached_app, create_app, cached_appbuilder
-
-from sqlalchemy.orm import exc
-from flask import request
-
-import asyncio
+from flask import Blueprint
 from flask import Flask
+from flask import request
+import base64
+from airflow import settings
+from airflow.exceptions import AirflowException
+from airflow.models import DAG
+from airflow.models import (
+    DagBag, TaskInstance
+)
+from airflow.utils.log.logging_mixin import (LoggingMixin)
+from airflow.utils.net import get_hostname
+from airflow.utils.state import State
+
+app = None  # type: Any
+loop = None
+DAGS_FOLDER = settings.DAGS_FOLDER
 
 
 async def abar(a):
     print(a)
 
+
 def create_app():
+    global loop, app
     loop = asyncio.get_event_loop()
     app = Flask(__name__)
-    DAGS_FOLDER = settings.DAGS_FOLDER
+    app.register_blueprint(routes)
     return app
 
 
-@app.route("/run")
+routes = Blueprint('routes', __name__)
+
+
+@routes.route("/run")
 def run_task():
     dag_id = request.args.get('dag_id')
     task_id = request.args.get('task_id')
-    print("running dag {} for task {}".format(dag_id,task_id))
-    # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
-    return "OK"
+    subdir = request.args.get('subdir')
+    execution_date = datetime.fromtimestamp(int(request.args.get("execution_date")))
+
+    try:
+        # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=datetime.now()))
+        run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
+        # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
+        return "running dag {} for task {} on date".format(dag_id, task_id, execution_date)
+    except ValueError as e:
+        import traceback
+        tb = traceback.format_exc()
+        return "failed {} {}".format(e, tb)
 
 
 def process_subdir(subdir):
@@ -104,9 +72,24 @@ def get_dag(dag_id: str, subdir: str) -> DAG:
     return dagbag.dags[dag_id]
 
 
-async def run(dag_id: str,
-              task_id: str,
-              execution_date: datetime):
+def get_task_instance(
+    dag_id: str,
+    task_id: str,
+    subdir: str,
+    execution_date: datetime,
+):
+    dag = get_dag(dag_id, subdir)
+
+    task = dag.get_task(task_id=task_id)
+    ti = TaskInstance(task, execution_date)
+    return ti
+
+
+def run(dag_id: str,
+        task_id: str,
+        execution_date: datetime,
+        subdir: str = None,
+        ):
     log = LoggingMixin().log
 
     # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
@@ -114,19 +97,21 @@ async def run(dag_id: str,
     # easily exceed the database connection limit when
     # processing hundreds of simultaneous tasks.
     settings.configure_orm(disable_connection_pool=True)
-    dag = get_dag(dag_id, "")
+    ti = get_task_instance(dag_id=dag_id,
+                           task_id=task_id,
+                           subdir=subdir,
+                           execution_date=execution_date)
+    run_task_instance(ti, log)
+    logging.shutdown()
 
-    task = dag.get_task(task_id=task_id)
-    ti = TaskInstance(task, execution_date)
+
+def run_task_instance(ti: TaskInstance, log):
     ti.refresh_from_db()
     set_task_instance_to_running(ti)
-
     ti.init_run_context()
-
     hostname = get_hostname()
     log.info("Running %s on host %s", ti, hostname)
     ti._run_raw_task()
-    logging.shutdown()
 
 
 def set_task_instance_to_running(ti):
@@ -134,5 +119,3 @@ def set_task_instance_to_running(ti):
     session = settings.Session()
     session.merge(ti)
     session.commit()
-
-
