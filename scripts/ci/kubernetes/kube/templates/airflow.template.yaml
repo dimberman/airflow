@@ -229,9 +229,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: airflow-knative
+  labels:
+    name: airflow-knative
 spec:
   ports:
     - port: 5000
-      targetPort: 50000
+      targetPort: worker
   selector:
     name: airflow-knative
