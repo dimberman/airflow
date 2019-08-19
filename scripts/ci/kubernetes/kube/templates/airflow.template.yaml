@@ -186,8 +186,7 @@ spec:
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
         imagePullPolicy: IfNotPresent
         ports:
-        - name: worker
-          containerPort: 5000
+        - containerPort: 8080
         args: ["knative_worker"]
         env:
         - name: AIRFLOW_KUBE_NAMESPACE
@@ -229,11 +228,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: airflow-knative
-  labels:
-    name: airflow-knative
 spec:
+  type: ClusterIP
   ports:
-    - port: 5000
-      targetPort: worker
+    - port: 8080
+      targetPort: 8080
   selector:
     name: airflow-knative

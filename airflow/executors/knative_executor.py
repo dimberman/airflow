@@ -88,17 +88,18 @@ class KnativeExecutor(BaseExecutor):
             return
         self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
-            req = 'http://localhost:5000'
+            date = int(datetime.datetime.timestamp(task_instance.execution_date))
+            req = 'http://airflow-knative:8080/run'
             params = {
                 "task_id": task_instance.task_id,
                 "dag_id": task_instance.dag_id,
+                "execution_date": date
             }
-            date = int(datetime.datetime.timestamp(task_instance.execution_date))
             self.log.info("expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id, task_instance.dag_id, date))
-            # future = self.loop.run_in_executor(None, requests.get, req, params)
-            # resp = await future
-            # if resp.status_code != 200:
-            #     raise asyncio.InvalidStateError()
+            future = self.loop.run_in_executor(None, requests.get, req, params)
+            resp = await future
+            if resp.status_code != 200:
+                raise asyncio.InvalidStateError()
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
