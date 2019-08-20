@@ -51,5 +51,7 @@ COPY airflow-test-env-init.sh /tmp/airflow-test-env-init.sh
 
 COPY bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
+COPY airflow.cfg /root/airflow/airflow.cfg
+COPY dags /root/airflow/dags
 
 ENTRYPOINT ["/bootstrap.sh"]

@@ -49,11 +49,6 @@ spec:
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
         imagePullPolicy: IfNotPresent
         volumeMounts:
-        - name: airflow-configmap
-          mountPath: /root/airflow/airflow.cfg
-          subPath: airflow.cfg
-        - name: {{INIT_DAGS_VOLUME_NAME}}
-          mountPath: /root/airflow/dags
         - name: test-volume
           mountPath: /root/test_volume
         env:
@@ -146,40 +141,16 @@ spec:
   selector:
     name: airflow
 ---
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: serving.knative.dev/v1alpha1 # Current version of Knative
+kind: Service
 metadata:
   name: airflow-knative
 spec:
-  replicas: 1
   template:
     metadata:
       labels:
         name: airflow-knative
     spec:
-      initContainers:
-      - name: "init"
-        image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
-        imagePullPolicy: IfNotPresent
-        volumeMounts:
-        - name: airflow-configmap
-          mountPath: /root/airflow/airflow.cfg
-          subPath: airflow.cfg
-        - name: {{INIT_DAGS_VOLUME_NAME}}
-          mountPath: /root/airflow/dags
-        - name: test-volume
-          mountPath: /root/test_volume
-        env:
-        - name: SQL_ALCHEMY_CONN
-          valueFrom:
-            secretKeyRef:
-              name: airflow-secrets
-              key: sql_alchemy_conn
-        command:
-          - "bash"
-        args:
-          - "-cx"
-          - "./tmp/airflow-test-env-init.sh"
 {{INIT_GIT_SYNC}}
       containers:
       - name: knative-worker
@@ -190,48 +161,21 @@ spec:
         args: ["knative_worker"]
         env:
         - name: AIRFLOW_KUBE_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+          value: default
         - name: SQL_ALCHEMY_CONN
           valueFrom:
             secretKeyRef:
               name: airflow-secrets
               key: sql_alchemy_conn
-        volumeMounts:
-        - name: airflow-configmap
-          mountPath: /root/airflow/airflow.cfg
-          subPath: airflow.cfg
-        - name: {{POD_AIRFLOW_DAGS_VOLUME_NAME}}
-          mountPath: /root/airflow/dags
-        - name: airflow-logs
-          mountPath: /root/airflow/logs
-      volumes:
-      - name: airflow-dags
-        persistentVolumeClaim:
-          claimName: airflow-dags
-      - name: airflow-dags-fake
-        emptyDir: {}
-      - name: airflow-dags-git
-        emptyDir: {}
-      - name: test-volume
-        persistentVolumeClaim:
-          claimName: test-volume
-      - name: airflow-logs
-        persistentVolumeClaim:
-          claimName: airflow-logs
-      - name: airflow-configmap
-        configMap:
-          name: airflow-configmap
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: airflow-knative
-spec:
-  type: ClusterIP
-  ports:
-    - port: 8080
-      targetPort: 8080
-  selector:
-    name: airflow-knative
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: airflow-knative
+#spec:
+#  type: ClusterIP
+#  ports:
+#    - port: 8080
+#      targetPort: 8080
+#  selector:
+#    name: airflow-knative
