@@ -89,7 +89,7 @@ class KnativeExecutor(BaseExecutor):
         self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
             date = int(datetime.datetime.timestamp(task_instance.execution_date))
-            req = 'http://airflow-knative:8080/run'
+            req = 'http://airflow-knative/run'
             params = {
                 "task_id": task_instance.task_id,
                 "dag_id": task_instance.dag_id,

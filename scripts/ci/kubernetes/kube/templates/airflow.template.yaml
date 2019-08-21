@@ -151,7 +151,6 @@ spec:
       labels:
         name: airflow-knative
     spec:
-{{INIT_GIT_SYNC}}
       containers:
       - name: knative-worker
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
