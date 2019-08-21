@@ -49,6 +49,7 @@ cd "${AIRFLOW_ROOT}"
 sudo rm -rf "${AIRFLOW_ROOT}/airflow/www/node_modules"
 sudo rm -rf "${AIRFLOW_ROOT}/airflow/www_rbac/node_modules"
 
+echo "finished compiling"
 pip freeze | grep -v airflow | grep -v mysql> ${DIRNAME}/requirements.txt
 echo "Copy distro ${AIRFLOW_ROOT}/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz"
 cp ${AIRFLOW_ROOT}/dist/*.tar.gz "${DIRNAME}/airflow.tar.gz"

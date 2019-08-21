@@ -49,7 +49,7 @@ def run_task():
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=datetime.now()))
         run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
-        return "running dag {} for task {} on date".format(dag_id, task_id, execution_date)
+        return "running dag {} fors task {} on date".format(dag_id, task_id, execution_date)
     except ValueError as e:
         import traceback
         tb = traceback.format_exc()

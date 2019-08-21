@@ -47,7 +47,7 @@ spec:
       initContainers:
       - name: "init"
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         volumeMounts:
         - name: test-volume
           mountPath: /root/test_volume
@@ -66,7 +66,7 @@ spec:
       containers:
       - name: webserver
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - name: webserver
           containerPort: 8080
@@ -91,7 +91,7 @@ spec:
           mountPath: /root/airflow/logs
       - name: scheduler
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         args: ["scheduler"]
         env:
         - name: AIRFLOW_KUBE_NAMESPACE
@@ -155,7 +155,7 @@ spec:
       containers:
       - name: knative-worker
         image: {{AIRFLOW_IMAGE}}:{{AIRFLOW_TAG}}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         args: ["knative_worker"]

@@ -28,7 +28,6 @@ import random
 import string
 from importlib import import_module
 import functools
-from flask_socketio import SocketIO
 import getpass
 import reprlib
 import argparse
