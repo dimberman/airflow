@@ -75,7 +75,7 @@ class KnativeExecutor(BaseExecutor):
 
         super().__init__()
 
-    async def execute_work(self, key, command, task_instance: SimpleTaskInstance = None):
+    async def execute_work(self, key, task_instance: SimpleTaskInstance = None):
         """
         Executes command received and stores result state in queue.
         :param task_instance:
@@ -112,9 +112,19 @@ class KnativeExecutor(BaseExecutor):
         self.workers = []
         self.workers_active = 0
 
+    def execute_group_async(self,
+                      task_instances =None):
+        tasks = []
+        for t in task_instances:
+            (key, ti) = t
+            tasks.append(asyncio.ensure_future(self.execute_work(key=key, task_instance=ti)))
+        self.loop.run_until_complete(asyncio.gather(tasks))
+
+
+
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        asyncio.run(
-            self.execute_work(key=key, command=command, task_instance=task_instance))
+        self.loop.run_until_complete(
+            self.execute_work(key=key, task_instance=task_instance))
 
     def sync(self):
         while not self.result_queue.empty():
