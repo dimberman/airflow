@@ -124,7 +124,7 @@ class KnativeExecutor(BaseExecutor):
                 self.workers_active -= 1
             except Empty:
                 break
-                
+
     def end(self):
         self.sync()
         self.manager.shutdown()
