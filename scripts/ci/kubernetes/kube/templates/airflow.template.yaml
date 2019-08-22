@@ -82,9 +82,6 @@ spec:
               name: airflow-secrets
               key: sql_alchemy_conn
         volumeMounts:
-        - name: airflow-configmap
-          mountPath: /root/airflow/airflow.cfg
-          subPath: airflow.cfg
         - name: airflow-logs
           mountPath: /root/airflow/logs
       - name: scheduler
@@ -102,9 +99,6 @@ spec:
               name: airflow-secrets
               key: sql_alchemy_conn
         volumeMounts:
-        - name: airflow-configmap
-          mountPath: /root/airflow/airflow.cfg
-          subPath: airflow.cfg
         - name: airflow-logs
           mountPath: /root/airflow/logs
       volumes:
