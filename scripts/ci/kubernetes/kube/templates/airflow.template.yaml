@@ -141,6 +141,8 @@ apiVersion: serving.knative.dev/v1alpha1 # Current version of Knative
 kind: Service
 metadata:
   name: airflow-knative
+  annotations:
+    autoscaling.knative.dev/target: "10"
 spec:
   template:
     metadata:
