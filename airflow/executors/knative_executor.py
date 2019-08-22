@@ -118,10 +118,13 @@ class KnativeExecutor(BaseExecutor):
 
     def sync(self):
         while not self.result_queue.empty():
-            results = self.result_queue.get_nowait()
-            self.change_state(*results)
-            self.workers_active -= 1
-
+            try:
+                results = self.result_queue.get_nowait()
+                self.change_state(*results)
+                self.workers_active -= 1
+            except Empty:
+                break
+                
     def end(self):
         self.sync()
         self.manager.shutdown()
