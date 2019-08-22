@@ -113,7 +113,7 @@ class KnativeExecutor(BaseExecutor):
         self.workers_active = 0
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.loop.run_until_complete(
+        asyncio.run(
             self.execute_work(key=key, command=command, task_instance=task_instance))
 
     def sync(self):
