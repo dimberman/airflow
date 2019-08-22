@@ -150,6 +150,7 @@ spec:
     metadata:
       labels:
         name: airflow-knative
+#        serving.knative.dev/visibility: cluster-local
     spec:
       containers:
       - name: knative-worker
