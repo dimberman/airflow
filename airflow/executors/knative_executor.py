@@ -118,7 +118,7 @@ class KnativeExecutor(BaseExecutor):
         for t in task_instances:
             (key, ti) = t
             tasks.append(asyncio.ensure_future(self.execute_work(key=key, task_instance=ti)))
-        self.loop.run_until_complete(asyncio.gather(tasks))
+        self.loop.run_until_complete(asyncio.gather(*tasks))
 
 
 
