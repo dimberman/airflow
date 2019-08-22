@@ -148,10 +148,10 @@ if [[ "${TRAVIS}" == true ]]; then
   sudo chown -R travis.travis "$HOME/.kube" "$HOME/.minikube"
 fi
 
-#kubectl delete -f "${DIRNAME}/postgres.yaml"
-#kubectl delete -f "${BUILD_DIRNAME}/airflow.yaml"
-#kubectl delete -f "${DIRNAME}/secrets.yaml"
-#kubectl delete -f "${BUILD_DIRNAME}/configmaps.yaml"
+kubectl delete -f "${DIRNAME}/postgres.yaml"
+kubectl delete -f "${BUILD_DIRNAME}/airflow.yaml"
+kubectl delete -f "${DIRNAME}/secrets.yaml"
+kubectl delete -f "${BUILD_DIRNAME}/configmaps.yaml"
 
 set -e
 

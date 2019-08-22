@@ -38,6 +38,11 @@ def create_app():
 routes = Blueprint('routes', __name__)
 
 
+@routes.route("/health")
+def health():
+    return "I am healthy"
+
+
 @routes.route("/run")
 def run_task():
     dag_id = request.args.get('dag_id')
