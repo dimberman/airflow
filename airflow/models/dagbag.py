@@ -190,6 +190,7 @@ class DagBag(BaseDagBag, LoggingMixin):
             mod_name = ('unusual_prefix_' +
                         hashlib.sha1(filepath.encode('utf-8')).hexdigest() +
                         '_' + org_mod_name)
+            self.log.info("file name is {}".format(mod_name))
 
             if mod_name in sys.modules:
                 del sys.modules[mod_name]
