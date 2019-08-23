@@ -123,7 +123,7 @@ class KnativeExecutor(BaseExecutor):
 
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.loop.run_coroutine_threadsafe(
+        self.loop.run_until_complete(
             self.execute_work(key=key, task_instance=task_instance))
 
     def sync(self):
