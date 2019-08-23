@@ -97,9 +97,9 @@ class KnativeExecutor(BaseExecutor):
             }
             self.log.info("expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id, task_instance.dag_id, date))
             future = self.loop.run_in_executor(None, requests.get, req, params)
-            resp = await future
+            resp: requests.Response = await future
             if resp.status_code != 200:
-                raise asyncio.InvalidStateError()
+                raise asyncio.InvalidStateError(resp.reason)
             self.result_queue.put((key, None))
         except asyncio.InvalidStateError as e:
             state = State.FAILED
@@ -123,7 +123,7 @@ class KnativeExecutor(BaseExecutor):
 
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.loop.run_until_complete(
+        self.loop.run_coroutine_threadsafe(
             self.execute_work(key=key, task_instance=task_instance))
 
     def sync(self):
