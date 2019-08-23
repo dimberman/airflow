@@ -42,6 +42,7 @@ from airflow.utils.helpers import pprinttable
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import State
 from airflow.utils.timeout import timeout
+from importlib.machinery import SourceFileLoader
 
 
 class DagBag(BaseDagBag, LoggingMixin):
@@ -195,7 +196,7 @@ class DagBag(BaseDagBag, LoggingMixin):
 
             # with timeout(configuration.conf.getint('core', "DAGBAG_IMPORT_TIMEOUT")):
             try:
-                m = imp.load_source(mod_name, filepath)
+                m = SourceFileLoader(mod_name, filepath).load_module()
                 mods.append(m)
             except Exception as e:
                 self.log.exception("Failed to import: %s", filepath)
