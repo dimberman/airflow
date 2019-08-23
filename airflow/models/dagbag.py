@@ -145,6 +145,7 @@ class DagBag(BaseDagBag, LoggingMixin):
         Given a path to a python module or zip file, this method imports
         the module and look for dag objects within it.
         """
+        self.log.info("filepath is {}".format(filepath))
         from airflow.models.dag import DAG  # Avoid circular import
 
         found_dags = []
