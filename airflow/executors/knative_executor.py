@@ -93,7 +93,8 @@ class KnativeExecutor(BaseExecutor):
             params = {
                 "task_id": task_instance.task_id,
                 "dag_id": task_instance.dag_id,
-                "execution_date": date
+                "execution_date": date,
+                "subdir": "/root/airflow/dags"
             }
             self.log.info("expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id, task_instance.dag_id, date))
             future = self.loop.run_in_executor(None, requests.get, req, params)
