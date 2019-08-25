@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: airflow-knative
+  annotations:
+    autoscaling.knative.dev/target: "10"
+spec:
+  template:
+    metadata:
+      labels:
+        name: airflow-knative
+#        serving.knative.dev/visibility: cluster-local
+    spec:
+      containers:
+      - name: knative-worker
+        image: dimberman/airflow-testing:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        args: ["knative_worker"]
+        env:
+        - name: AIRFLOW_KUBE_NAMESPACE
+          value: default
+        - name: SQL_ALCHEMY_CONN
+          valueFrom:
+            secretKeyRef:
+              name: airflow-secrets
+              key: sql_alchemy_conn
