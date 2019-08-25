@@ -204,7 +204,7 @@ else
   exit 1
 fi
 
-#kubectl apply -f "${DIRNAME}/knative.yaml"
+kubectl apply -f "${DIRNAME}/knative.yaml"
 
 
 # Wait until Airflow webserver is up
