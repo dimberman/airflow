@@ -152,6 +152,7 @@ kubectl delete -f "${DIRNAME}/postgres.yaml"
 kubectl delete -f "${BUILD_DIRNAME}/airflow.yaml"
 kubectl delete -f "${DIRNAME}/secrets.yaml"
 kubectl delete -f "${BUILD_DIRNAME}/configmaps.yaml"
+kubectl delete -f "${DIRNAME}/knative.yaml"
 
 set -e
 
