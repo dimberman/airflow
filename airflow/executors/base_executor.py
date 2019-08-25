@@ -144,20 +144,20 @@ class BaseExecutor(LoggingMixin):
             [(k, v) for k, v in self.queued_tasks.items()],
             key=lambda x: x[1][1],
             reverse=True)
-        tis = []
-        for _ in range(min((open_slots, len(self.queued_tasks)))):
-            key, (_,_,_,simple_ti) = sorted_queue.pop(0)
-            tis.append((key, simple_ti))
-        self.execute_group_async(tis)
+        # tis = []
         # for _ in range(min((open_slots, len(self.queued_tasks)))):
-        #     key, (command, _, queue, simple_ti) = sorted_queue.pop(0)
-        #     self.queued_tasks.pop(key)
-        #     self.running[key] = command
-        #     self.execute_async(key=key,
-        #                        command=command,
-        #                        queue=queue,
-        #                        executor_config=simple_ti.executor_config,
-        #                        task_instance=simple_ti)
+        #     key, (_,_,_,simple_ti) = sorted_queue.pop(0)
+        #     tis.append((key, simple_ti))
+        # self.execute_group_async(tis)
+        for _ in range(min((open_slots, len(self.queued_tasks)))):
+            key, (command, _, queue, simple_ti) = sorted_queue.pop(0)
+            self.queued_tasks.pop(key)
+            self.running[key] = command
+            self.execute_async(key=key,
+                               command=command,
+                               queue=queue,
+                               executor_config=simple_ti.executor_config,
+                               task_instance=simple_ti)
 
     def change_state(self, key, state):
         self.log.debug("Changing state: %s", key)
