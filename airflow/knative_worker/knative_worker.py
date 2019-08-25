@@ -49,12 +49,16 @@ def run_task():
     task_id = request.args.get('task_id')
     subdir = request.args.get('subdir')
     execution_date = datetime.fromtimestamp(int(request.args.get("execution_date")))
+    log = LoggingMixin().log
+
+    log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id,task_id,execution_date, subdir))
+    logging.shutdown()
 
     try:
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=datetime.now()))
         run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
-        return "running dag {} fors task {} on date".format(dag_id, task_id, execution_date)
+        return "running dag {} for task {} on date".format(dag_id, task_id, execution_date)
     except ValueError as e:
         import traceback
         tb = traceback.format_exc()
