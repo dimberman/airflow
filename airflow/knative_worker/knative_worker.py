@@ -24,6 +24,23 @@ loop: asyncio.AbstractEventLoop = None
 executor = None
 DAGS_FOLDER = settings.DAGS_FOLDER
 
+from flask import jsonify
+
+
+class AirflowTaskFailedException(Exception):
+    status_code = 500
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
 
 async def abar(a):
     print(a)
@@ -66,11 +83,11 @@ def run_task():
         if out.state == 'success':
             return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date)
         else:
-            raise AirflowException("task failed")
+            raise AirflowTaskFailedException("task failed")
     except ValueError as e:
         import traceback
         tb = traceback.format_exc()
-        return "failed {} {}".format(e, tb)
+        return AirflowTaskFailedException("failed {} {}".format(e, tb))
 
 
 def process_subdir(subdir):
