@@ -60,10 +60,13 @@ def run_task():
     try:
         # loop.run_in_executor()
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=datetime.now()))
-        loop.run_in_executor(executor, run, dag_id, task_id, subdir, execution_date)
+        out = yield from loop.run_in_executor(executor, run, dag_id, task_id, subdir, execution_date)
         # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
-        return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date)
+        if out.state == 'success':
+            return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date)
+        else:
+            raise AirflowException("task failed")
     except ValueError as e:
         import traceback
         tb = traceback.format_exc()
@@ -117,6 +120,7 @@ def run(dag_id: str,
                            execution_date=execution_date)
     run_task_instance(ti, log)
     logging.shutdown()
+    return ti
 
 
 def run_task_instance(ti: TaskInstance, log):
