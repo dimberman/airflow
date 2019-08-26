@@ -17,9 +17,11 @@ from airflow.models import (
 from airflow.utils.log.logging_mixin import (LoggingMixin)
 from airflow.utils.net import get_hostname
 from airflow.utils.state import State
+from concurrent.futures import ProcessPoolExecutor
 
 app = None  # type: Any
-loop = None
+loop: asyncio.AbstractEventLoop = None
+executor = None
 DAGS_FOLDER = settings.DAGS_FOLDER
 
 
@@ -28,8 +30,9 @@ async def abar(a):
 
 
 def create_app():
-    global loop, app
+    global loop, app, executor
     loop = asyncio.get_event_loop()
+    executor = ProcessPoolExecutor()
     app = Flask(__name__)
     app.register_blueprint(routes)
     return app
@@ -55,8 +58,10 @@ def run_task():
     logging.shutdown()
 
     try:
+        # loop.run_in_executor()
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=datetime.now()))
-        run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
+        loop.run_in_executor(executor, run, dag_id, task_id, subdir, execution_date)
+        # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
         return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date)
     except ValueError as e:
