@@ -60,6 +60,83 @@ import requests
 from airflow.utils.dag_processing import SimpleTaskInstance
 from asyncio.futures import Future
 
+class LocalWorker(multiprocessing.Process, LoggingMixin):
+
+    """LocalWorker Process implementation to run airflow commands. Executes the given
+    command and puts the result into a result queue when done, terminating execution."""
+
+    def __init__(self, result_queue):
+        """
+        :param result_queue: the queue to store result states tuples (key, State)
+        :type result_queue: multiprocessing.Queue
+        """
+        super().__init__()
+        self.daemon = True
+        self.result_queue = result_queue
+        self.key = None
+        self.command = None
+
+    # def execute_work(self, key, command):
+    #     #     """
+    #     #     Executes command received and stores result state in queue.
+    #     #     :param key: the key to identify the TI
+    #     #     :type key: tuple(dag_id, task_id, execution_date)
+    #     #     :param command: the command to execute
+    #     #     :type command: str
+    #     #     """
+    #     #     if key is None:
+    #     #         return
+    #     #     self.log.info("%s running %s", self.__class__.__name__, command)
+    #     #     try:
+    #     #         subprocess.check_call(command, close_fds=True)
+    #     #         state = State.SUCCESS
+    #     #     except subprocess.CalledProcessError as e:
+    #     #         state = State.FAILED
+    #     #         self.log.error("Failed to execute task %s.", str(e))
+    #     #     self.result_queue.put((key, state))
+    def execute_work(self, key, task_instance: SimpleTaskInstance = None):
+        """
+        Executes command received and stores result state in queue.
+        :param task_instance:
+        :param key: the key to identify the TI
+        :type key: tuple(dag_id, task_id, execution_date)
+        :param command: the command to execute
+        :type command: str
+        """
+        if key is None:
+            return
+        self.log.info("%s running %s", self.__class__.__name__, task_instance)
+        try:
+            date = int(datetime.datetime.timestamp(task_instance.execution_date))
+            req = 'http://airflow-knative.default/run'
+            params = {
+                "task_id": task_instance.task_id,
+                "dag_id": task_instance.dag_id,
+                "execution_date": date,
+                "subdir": "/root/airflow/dags"
+            }
+            self.log.info(
+                "expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
+                                                                                        task_instance.dag_id, date))
+            resp = requests.get(req, params)
+            # resp: requests.Response =
+            # future
+            if resp.status_code != 200:
+                state = State.FAILED
+                self.log.error("Failed to execute task %s.", str(resp.text))
+                self.result_queue.put((key, state))
+            else:
+                state = State.FAILED
+                self.log.info("assuming task success")
+                self.result_queue.put((key, state))
+        except asyncio.InvalidStateError as e:
+            state = State.FAILED
+            self.log.error("Failed to execute task %s.", str(e))
+            self.result_queue.put((key, state))
+
+    def run(self):
+        self.execute_work(self.key, self.command)
+
 
 class KnativeExecutor(BaseExecutor):
     """
@@ -72,6 +149,8 @@ class KnativeExecutor(BaseExecutor):
         pass
 
     def __init__(self, loop):
+        self.manager = multiprocessing.Manager()
+        self.result_queue = self.manager.Queue()
         self.loop = loop
         self.pool = multiprocessing.Pool(processes=10)
 
@@ -128,7 +207,12 @@ class KnativeExecutor(BaseExecutor):
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
         # self.loop.run_until_complete(
-        multiprocessing.Process(self.execute_work(key=key, task_instance=task_instance))
+        local_worker = KnativeWorker(self.executor.result_queue)
+        local_worker.key = key
+        local_worker.command = command
+        self.executor.workers_used += 1
+        self.executor.workers_active += 1
+        local_worker.start()
 
     def sync(self):
         while not self.result_queue.empty():
