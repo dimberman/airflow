@@ -60,7 +60,7 @@ import requests
 from airflow.utils.dag_processing import SimpleTaskInstance
 from asyncio.futures import Future
 
-class LocalWorker(multiprocessing.Process, LoggingMixin):
+class KnativeWorker(multiprocessing.Process, LoggingMixin):
 
     """LocalWorker Process implementation to run airflow commands. Executes the given
     command and puts the result into a result queue when done, terminating execution."""
@@ -207,11 +207,11 @@ class KnativeExecutor(BaseExecutor):
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
         # self.loop.run_until_complete(
-        local_worker = KnativeWorker(self.executor.result_queue)
+        local_worker = KnativeWorker(self.result_queue)
         local_worker.key = key
         local_worker.command = command
-        self.executor.workers_used += 1
-        self.executor.workers_active += 1
+        # self.workers_used += 1
+        # self.executor.workers_active += 1
         local_worker.start()
 
     def sync(self):
