@@ -28,10 +28,27 @@ from airflow.utils.db import create_session
 from airflow.utils.log.logging_mixin import (LoggingMixin)
 from airflow.utils.state import State
 from tests.models import DEFAULT_DATE
+import asyncio
+
+loop: asyncio.AbstractEventLoop = None
+
+async def request(dag_id, task_id, execution_date, app):
+    query_string = "dag_id={}&task_id={}&execution_date={}".format(dag_id, task_id, execution_date)
+    single_task = app.get("/run", query_string=query_string)
 
 
 class TestKnativeWorker(unittest.TestCase):
+    loop = asyncio.get_event_loop()
 
+    def setUp(self):
+        app = knative_worker.create_app()
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.config['DEBUG'] = True
+        self.app = app.test_client()
+        # self.assertEqual(app.debug, False)
+
+    # executed after each test
     def tearDown(self):
         with create_session() as session:
             session.query(TaskFail).delete()
@@ -39,13 +56,28 @@ class TestKnativeWorker(unittest.TestCase):
             session.query(models.TaskInstance).delete()
             session.query(models.DagRun).delete()
 
-    def test_knative_run_task(self):
-        dag = DAG('test_success_callbak_no_race_condition', start_date=DEFAULT_DATE,
-                  end_date=DEFAULT_DATE + datetime.timedelta(days=10))
-        task = DummyOperator(task_id='op', email='test@test.test', dag=dag)
-        ti = TI(task=task, execution_date=datetime.datetime.now())
-        log = LoggingMixin().log
+    def test_basic_health(self):
+        health_check = self.app.get("/health")
+        self.assertEqual(200, health_check.status_code)
 
-        knative_worker.run_task_instance(ti, log)
-        ti.refresh_from_db()
-        self.assertEqual(ti.state, State.SUCCESS)
+    def test_knative_run_task(self):
+        date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+        dag_id = "test_knative_worker"
+        task_id = "op0"
+        query_string = "dag_id={}&task_id={}&execution_date={}".format(dag_id, task_id, date)
+        single_task = self.app.get("/run", query_string=query_string)
+        self.assertEqual(200, single_task.status_code)
+        dag = knative_worker.get_dag(dag_id=dag_id, subdir=None)
+        tis = dag.get_task_instances()
+        self.assertEqual(1, len(tis))
+        self.assertEqual(State.SUCCESS, tis[0].state)
+
+    def test_knative_run_multiple_tasks(self):
+        requests = []
+        dag_id = "test_knative_worker"
+        date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+
+        for t in range(0, 100):
+            # task_ids.append("op" + str(t))
+            requests.append(asyncio.ensure_future(request(dag_id=dag_id, task_id="op" + str(t), execution_date=date, app=self.app)))
+        self.loop.run_until_complete(asyncio.gather(*requests))

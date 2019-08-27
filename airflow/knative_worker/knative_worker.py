@@ -70,24 +70,22 @@ def run_task():
     subdir = request.args.get('subdir')
     execution_date = datetime.fromtimestamp(int(request.args.get("execution_date")))
     log = LoggingMixin().log
-
+    #
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id,task_id,execution_date, subdir))
     logging.shutdown()
-
+    #
     try:
-        # loop.run_in_executor()
-        # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=datetime.now()))
-        out = yield from loop.run_in_executor(executor, run, dag_id, task_id, subdir, execution_date)
+        out = run(dag_id, task_id, execution_date, subdir)
         # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
         if out.state == 'success':
             return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date)
         else:
-            raise AirflowTaskFailedException("task failed")
+            return AirflowException("task failed")
     except ValueError as e:
         import traceback
         tb = traceback.format_exc()
-        return AirflowTaskFailedException("failed {} {}".format(e, tb))
+        return AirflowException("failed {} {}".format(e, tb))
 
 
 def process_subdir(subdir):
