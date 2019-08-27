@@ -83,7 +83,7 @@ def run_task():
             return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date), status.HTTP_200_OK
         else:
             return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
-    except ValueError as e:
+    except Exception as e:
         import traceback
         tb = traceback.format_exc()
         return "failed {} {}".format(e, tb), status.HTTP_500_INTERNAL_SERVER_ERROR
