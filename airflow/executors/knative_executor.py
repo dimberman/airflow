@@ -104,7 +104,8 @@ class KnativeExecutor(BaseExecutor):
                 state = State.FAILED
                 self.log.error("Failed to execute task %s.", str(resp.text))
                 self.result_queue.put((key, state))
-            self.result_queue.put((key, None))
+            else:
+                self.result_queue.put((key, None))
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
