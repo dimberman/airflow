@@ -101,7 +101,9 @@ class KnativeExecutor(BaseExecutor):
             future = self.loop.run_in_executor(None, requests.get, req, params)
             resp: requests.Response = await future
             if resp.status_code != 200:
-                raise asyncio.InvalidStateError(resp.reason)
+                state = State.FAILED
+                self.log.error("Failed to execute task %s.", str(e))
+                self.result_queue.put((key, state))
             self.result_queue.put((key, None))
         except asyncio.InvalidStateError as e:
             state = State.FAILED
