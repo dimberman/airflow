@@ -26,6 +26,7 @@ DAGS_FOLDER = settings.DAGS_FOLDER
 
 from flask import jsonify
 
+from flask_api import FlaskAPI, status, exceptions
 
 class AirflowTaskFailedException(Exception):
     status_code = 500
@@ -50,7 +51,7 @@ def create_app():
     global loop, app, executor
     loop = asyncio.get_event_loop()
     executor = ProcessPoolExecutor()
-    app = Flask(__name__)
+    app = FlaskAPI(__name__)
     app.register_blueprint(routes)
     return app
 
@@ -79,13 +80,13 @@ def run_task():
         # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
         if out.state == 'success':
-            return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date)
+            return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date), status.HTTP_200_OK
         else:
-            return AirflowException("task failed")
+            return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
     except ValueError as e:
         import traceback
         tb = traceback.format_exc()
-        return AirflowException("failed {} {}".format(e, tb))
+        return "failed {} {}".format(e, tb), status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 def process_subdir(subdir):
