@@ -105,7 +105,8 @@ class KnativeExecutor(BaseExecutor):
                 self.log.error("Failed to execute task %s.", str(resp.text))
                 self.result_queue.put((key, state))
             else:
-                self.result_queue.put((key, None))
+                self.log.info("assuming task success")
+                # self.result_queue.put((key, None))
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
@@ -115,7 +116,6 @@ class KnativeExecutor(BaseExecutor):
         self.manager = multiprocessing.Manager()
         self.result_queue = self.manager.Queue()
         self.workers = []
-        self.workers_active = 0
 
     def execute_group_async(self,
                       task_instances =None):
@@ -134,7 +134,6 @@ class KnativeExecutor(BaseExecutor):
             try:
                 results = self.result_queue.get_nowait()
                 self.change_state(*results)
-                self.workers_active -= 1
             except Empty:
                 break
 
