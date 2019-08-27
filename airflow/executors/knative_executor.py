@@ -73,6 +73,7 @@ class KnativeExecutor(BaseExecutor):
 
     def __init__(self, loop):
         self.loop = loop
+        self.pool = multiprocessing.Pool(processes=10)
 
         super().__init__()
 
@@ -126,8 +127,8 @@ class KnativeExecutor(BaseExecutor):
         self.loop.run_until_complete(asyncio.gather(*tasks))
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.loop.run_until_complete(
-            self.execute_work(key=key, task_instance=task_instance))
+        # self.loop.run_until_complete(
+        multiprocessing.Process(self.execute_work(key=key, task_instance=task_instance))
 
     def sync(self):
         while not self.result_queue.empty():
