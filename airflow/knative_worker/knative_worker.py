@@ -76,13 +76,15 @@ def run_task():
     logging.shutdown()
     #
     try:
-        out = run(dag_id, task_id, execution_date, subdir)
-        # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
-        # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
-        if out.state == 'success':
-            return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date), status.HTTP_200_OK
-        else:
-            return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
+        newpid = os.fork()
+        if newpid == 0:
+            out = run(dag_id, task_id, execution_date, subdir)
+            # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
+            # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
+            if out.state == 'success':
+                return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date), status.HTTP_200_OK
+            else:
+                return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
     except Exception as e:
         import traceback
         tb = traceback.format_exc()

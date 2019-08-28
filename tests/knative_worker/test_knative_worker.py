@@ -29,8 +29,43 @@ from airflow.utils.log.logging_mixin import (LoggingMixin)
 from airflow.utils.state import State
 from tests.models import DEFAULT_DATE
 import asyncio
+import requests
+from requests import Response
+from asyncio import Future
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 loop: asyncio.AbstractEventLoop = None
+executor = None
+
+def make_request(task_id):
+    req = 'http://35.245.62.83/run'
+    date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+
+    params = {
+        "task_id": task_id,
+        "dag_id": 'my_dag',
+        "execution_date": date,
+        "subdir": "/root/airflow/dags"
+    }
+
+    return requests.get(req, params, headers={"Host": "airflow-knative.default.example.com"})
+
+
+async def make_request_async(task_id) -> Response:
+    req = 'http://35.245.62.83/run'
+    date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+
+    params = {
+        "task_id": task_id,
+        "dag_id": 'my_dag',
+        "execution_date": date,
+        "subdir": "/root/airflow/dags"
+    }
+
+    req_func = partial(requests.get, req, params, headers={"Host": "airflow-knative.default.example.com"})
+    return await loop.run_in_executor(None, req_func)
+
 
 async def request(dag_id, task_id, execution_date, app):
     query_string = "dag_id={}&task_id={}&execution_date={}".format(dag_id, task_id, execution_date)
@@ -38,9 +73,11 @@ async def request(dag_id, task_id, execution_date, app):
 
 
 class TestKnativeWorker(unittest.TestCase):
-    loop = asyncio.get_event_loop()
 
     def setUp(self):
+        global loop, executor
+        executor = ThreadPoolExecutor
+        loop = asyncio.get_event_loop()
         app = knative_worker.create_app()
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
@@ -79,5 +116,28 @@ class TestKnativeWorker(unittest.TestCase):
 
         for t in range(0, 100):
             # task_ids.append("op" + str(t))
-            requests.append(asyncio.ensure_future(request(dag_id=dag_id, task_id="op" + str(t), execution_date=date, app=self.app)))
+            requests.append(
+                asyncio.ensure_future(request(dag_id=dag_id, task_id="op" + str(t), execution_date=date, app=self.app)))
         self.loop.run_until_complete(asyncio.gather(*requests))
+
+    def test_execute_work(self):
+        resp = make_request("runme_0")
+        self.assertEqual(200, resp.status_code)
+
+    def test_execute_lots_of_work(self):
+        for i in range(0, 20):
+            resp = make_request("runme_" + str(i))
+            self.assertEqual(200, resp.status_code)
+
+    def test_execute_lots_of_work_async(self):
+        tasks = []
+        for j in range(0,10):
+            for i in range(0, 20):
+                tasks.append(asyncio.ensure_future(make_request_async("runme_"+str(i))))
+        results = loop.run_until_complete(asyncio.gather(*tasks))
+        status_codes = [result.status_code for result in results]
+        correct = status_codes.count(200)
+        incorrect = status_codes.count(500)
+        for result in results:
+            self.assertEqual(200, result.status_code)
+        print(results)

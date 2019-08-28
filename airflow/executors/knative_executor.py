@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -59,83 +58,9 @@ from concurrent.futures import ProcessPoolExecutor
 import requests
 from airflow.utils.dag_processing import SimpleTaskInstance
 from asyncio.futures import Future
+from functools import partial
+from requests import Response
 
-class KnativeWorker(multiprocessing.Process, LoggingMixin):
-
-    """LocalWorker Process implementation to run airflow commands. Executes the given
-    command and puts the result into a result queue when done, terminating execution."""
-
-    def __init__(self, result_queue):
-        """
-        :param result_queue: the queue to store result states tuples (key, State)
-        :type result_queue: multiprocessing.Queue
-        """
-        super().__init__()
-        self.daemon = True
-        self.result_queue = result_queue
-        self.key = None
-        self.command = None
-
-    # def execute_work(self, key, command):
-    #     #     """
-    #     #     Executes command received and stores result state in queue.
-    #     #     :param key: the key to identify the TI
-    #     #     :type key: tuple(dag_id, task_id, execution_date)
-    #     #     :param command: the command to execute
-    #     #     :type command: str
-    #     #     """
-    #     #     if key is None:
-    #     #         return
-    #     #     self.log.info("%s running %s", self.__class__.__name__, command)
-    #     #     try:
-    #     #         subprocess.check_call(command, close_fds=True)
-    #     #         state = State.SUCCESS
-    #     #     except subprocess.CalledProcessError as e:
-    #     #         state = State.FAILED
-    #     #         self.log.error("Failed to execute task %s.", str(e))
-    #     #     self.result_queue.put((key, state))
-    def execute_work(self, key, task_instance: SimpleTaskInstance = None):
-        """
-        Executes command received and stores result state in queue.
-        :param task_instance:
-        :param key: the key to identify the TI
-        :type key: tuple(dag_id, task_id, execution_date)
-        :param command: the command to execute
-        :type command: str
-        """
-        if key is None:
-            return
-        self.log.info("%s running %s", self.__class__.__name__, task_instance)
-        try:
-            date = int(datetime.datetime.timestamp(task_instance.execution_date))
-            req = 'http://airflow-knative.default/run'
-            params = {
-                "task_id": task_instance.task_id,
-                "dag_id": task_instance.dag_id,
-                "execution_date": date,
-                "subdir": "/root/airflow/dags"
-            }
-            self.log.info(
-                "expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
-                                                                                        task_instance.dag_id, date))
-            resp = requests.get(req, params)
-            # resp: requests.Response =
-            # future
-            if resp.status_code != 200:
-                state = State.FAILED
-                self.log.error("Failed to execute task %s.", str(resp.text))
-                self.result_queue.put((key, state))
-            else:
-                state = State.FAILED
-                self.log.info("assuming task success")
-                self.result_queue.put((key, state))
-        except asyncio.InvalidStateError as e:
-            state = State.FAILED
-            self.log.error("Failed to execute task %s.", str(e))
-            self.result_queue.put((key, state))
-
-    def run(self):
-        self.execute_work(self.key, self.command)
 
 
 class KnativeExecutor(BaseExecutor):
@@ -144,6 +69,20 @@ class KnativeExecutor(BaseExecutor):
     multiprocessing Python library and queues to parallelize the execution
     of tasks.
     """
+
+    async def make_request_async(self, task_id) -> Response:
+        req = 'http://35.245.62.83/run'
+        date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+
+        params = {
+            "task_id": task_id,
+            "dag_id": 'my_dag',
+            "execution_date": date,
+            "subdir": "/root/airflow/dags"
+        }
+
+        req_func = partial(requests.get, req, params, headers={"Host": "airflow-knative.default.example.com"})
+        return await self.loop.run_in_executor(None, req_func)
 
     def terminate(self):
         pass
@@ -177,8 +116,10 @@ class KnativeExecutor(BaseExecutor):
                 "execution_date": date,
                 "subdir": "/root/airflow/dags"
             }
-            self.log.info("expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id, task_instance.dag_id, date))
-            future = self.loop.run_in_executor(None, requests.get, req, params)
+            self.log.info(
+                "expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
+                                                                                        task_instance.dag_id, date))
+            future = self.make_request_async(task_instance.task_id)
             resp: requests.Response = await future
             if resp.status_code != 200:
                 state = State.FAILED
@@ -195,10 +136,11 @@ class KnativeExecutor(BaseExecutor):
     def start(self):
         self.manager = multiprocessing.Manager()
         self.result_queue = self.manager.Queue()
+        self.task_queue = self.manager.Queue()
         self.workers = []
 
     def execute_group_async(self,
-                      task_instances =None):
+                            task_instances=None):
         tasks = []
         for t in task_instances:
             (key, ti) = t
@@ -207,14 +149,10 @@ class KnativeExecutor(BaseExecutor):
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
         # self.loop.run_until_complete(
-        local_worker = KnativeWorker(self.result_queue)
-        local_worker.key = key
-        local_worker.command = command
-        # self.workers_used += 1
-        # self.executor.workers_active += 1
-        local_worker.start()
+        pass
 
     def sync(self):
+        self.execute_group_async(self.task_queue())
         while not self.result_queue.empty():
             try:
                 results = self.result_queue.get_nowait()
