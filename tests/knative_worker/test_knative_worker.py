@@ -78,11 +78,7 @@ class TestKnativeWorker(unittest.TestCase):
         global loop, executor
         executor = ThreadPoolExecutor
         loop = asyncio.get_event_loop()
-        app = knative_worker.create_app()
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_ENABLED'] = False
-        app.config['DEBUG'] = True
-        self.app = app.test_client()
+        self.app = knative_worker.create_app()
         # self.assertEqual(app.debug, False)
 
     # executed after each test

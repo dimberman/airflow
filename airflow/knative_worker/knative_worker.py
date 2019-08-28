@@ -37,9 +37,9 @@ async def health(request):
 
 
 async def run_task(request):
-    dag_id = request.args.get('dag_id')
-    task_id = request.args.get('task_id')
-    subdir = request.args.get('subdir')
+    dag_id = request.match_info('dag_id')
+    task_id = request.match_info('task_id')
+    subdir = request.match_info('subdir')
     execution_date = datetime.fromtimestamp(int(request.args.get("execution_date")))
     log = LoggingMixin().log
     #
@@ -136,43 +136,3 @@ def create_app():
     app = web.Application(loop=loop)
     app.add_routes([web.get('/health', health), web.get('/run', run_task)])
     return app
-#
-# class AirflowTaskFailedException(Exception):
-#     status_code = 500
-#
-#     def __init__(self, message, status_code=None, payload=None):
-#         Exception.__init__(self)
-#         self.message = message
-#         if status_code is not None:
-#             self.status_code = status_code
-#         self.payload = payload
-#
-#     def to_dict(self):
-#         rv = dict(self.payload or ())
-#         rv['message'] = self.message
-#         return rv
-#
-#
-# async def abar(a):
-#     print(a)
-#
-#
-# def create_app():
-#     global loop, app, executor
-#     loop = asyncio.get_event_loop()
-#     coro = asyncio.start_server(handle_echo, '0.0.0.0', 8080, loop=loop)
-#
-#     # pool = Pool(10)
-#     executor = ProcessPoolExecutor()
-#     app = FlaskAPI(__name__)
-#     app.register_blueprint(routes)
-#     return app
-#
-#
-# routes = Blueprint('routes', __name__)
-#
-#
-# def health():
-#     return "I am healthy"
-#
-#
