@@ -4,9 +4,9 @@ import os
 from datetime import datetime
 from typing import Any
 
-from flask import Blueprint
-from flask import Flask
-from flask import request
+# from flask import Blueprint
+# from flask import Flask
+# from flask import request
 import base64
 from airflow import settings
 from airflow.exceptions import AirflowException
@@ -24,53 +24,19 @@ loop: asyncio.AbstractEventLoop = None
 pool = None
 executor = None
 DAGS_FOLDER = settings.DAGS_FOLDER
-from multiprocessing import Pool
+# from multiprocessing import Pool
 from functools import partial
-from flask import jsonify
+# from flask import jsonify
 
-from flask_api import FlaskAPI, status, exceptions
-
-
-class AirflowTaskFailedException(Exception):
-    status_code = 500
-
-    def __init__(self, message, status_code=None, payload=None):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        self.payload = payload
-
-    def to_dict(self):
-        rv = dict(self.payload or ())
-        rv['message'] = self.message
-        return rv
+import asyncio
+from aiohttp import web
 
 
-async def abar(a):
-    print(a)
+async def health(request):
+    return web.Response(text="Hello, world")
 
 
-def create_app():
-    global loop, app, executor
-    loop = asyncio.get_event_loop()
-    # pool = Pool(10)
-    executor = ProcessPoolExecutor()
-    app = FlaskAPI(__name__)
-    app.register_blueprint(routes)
-    return app
-
-
-routes = Blueprint('routes', __name__)
-
-
-@routes.route("/health")
-def health():
-    return "I am healthy"
-
-
-@routes.route("/run")
-def run_task():
+async def run_task(request):
     dag_id = request.args.get('dag_id')
     task_id = request.args.get('task_id')
     subdir = request.args.get('subdir')
@@ -82,19 +48,18 @@ def run_task():
     #
     try:
         # newpid = os.fork()
-        run_func = partial(run, dag_id, task_id, execution_date, subdir)
-        out = yield loop.run_in_executor(executor, run_func)
+        out = run(dag_id, task_id, execution_date, subdir)
         # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
         if out.state == 'success':
-            return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id,
-                                                                           execution_date), status.HTTP_200_OK
+            web.Response(body="successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date),
+                         status=200)
         else:
-            return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
+            web.Response(body="task failed", status=500)
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
-        return "failed {} {}".format(e, tb), status.HTTP_500_INTERNAL_SERVER_ERROR
+        web.Response(body="failed {} {}".format(e, tb), status=500)
 
 
 def process_subdir(subdir):
@@ -161,3 +126,53 @@ def set_task_instance_to_running(ti):
     session = settings.Session()
     session.merge(ti)
     session.commit()
+
+
+def create_app():
+    global loop, app, executor
+    loop = asyncio.get_event_loop()
+    executor = ProcessPoolExecutor()
+    loop.set_default_executor(executor)
+    app = web.Application(loop=loop)
+    app.add_routes([web.get('/health', health), web.get('/run', run_task)])
+    return app
+#
+# class AirflowTaskFailedException(Exception):
+#     status_code = 500
+#
+#     def __init__(self, message, status_code=None, payload=None):
+#         Exception.__init__(self)
+#         self.message = message
+#         if status_code is not None:
+#             self.status_code = status_code
+#         self.payload = payload
+#
+#     def to_dict(self):
+#         rv = dict(self.payload or ())
+#         rv['message'] = self.message
+#         return rv
+#
+#
+# async def abar(a):
+#     print(a)
+#
+#
+# def create_app():
+#     global loop, app, executor
+#     loop = asyncio.get_event_loop()
+#     coro = asyncio.start_server(handle_echo, '0.0.0.0', 8080, loop=loop)
+#
+#     # pool = Pool(10)
+#     executor = ProcessPoolExecutor()
+#     app = FlaskAPI(__name__)
+#     app.register_blueprint(routes)
+#     return app
+#
+#
+# routes = Blueprint('routes', __name__)
+#
+#
+# def health():
+#     return "I am healthy"
+#
+#

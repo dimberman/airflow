@@ -890,7 +890,9 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
 @cli_utils.action_logging
 def knative_worker(args):
     app = kworker.create_app()
-    app.run(debug=True, use_reloader=False, port=8080, host="0.0.0.0")
+    from aiohttp import web
+    web.run_app(app)
+    # app.run(debug=True, use_reloader=False, port=8080, host="0.0.0.0")
 
 
 @cli_utils.action_logging
