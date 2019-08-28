@@ -152,7 +152,7 @@ class KnativeExecutor(BaseExecutor):
         pass
 
     def sync(self):
-        self.execute_group_async(self.task_queue())
+        # self.execute_group_async(self.task_queue())
         while not self.result_queue.empty():
             try:
                 results = self.result_queue.get_nowait()

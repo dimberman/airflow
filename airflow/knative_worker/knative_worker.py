@@ -21,12 +21,15 @@ from concurrent.futures import ProcessPoolExecutor
 
 app = None  # type: Any
 loop: asyncio.AbstractEventLoop = None
+pool = None
 executor = None
 DAGS_FOLDER = settings.DAGS_FOLDER
-
+from multiprocessing import Pool
+from functools import partial
 from flask import jsonify
 
 from flask_api import FlaskAPI, status, exceptions
+
 
 class AirflowTaskFailedException(Exception):
     status_code = 500
@@ -43,6 +46,7 @@ class AirflowTaskFailedException(Exception):
         rv['message'] = self.message
         return rv
 
+
 async def abar(a):
     print(a)
 
@@ -50,6 +54,7 @@ async def abar(a):
 def create_app():
     global loop, app, executor
     loop = asyncio.get_event_loop()
+    # pool = Pool(10)
     executor = ProcessPoolExecutor()
     app = FlaskAPI(__name__)
     app.register_blueprint(routes)
@@ -72,19 +77,20 @@ def run_task():
     execution_date = datetime.fromtimestamp(int(request.args.get("execution_date")))
     log = LoggingMixin().log
     #
-    log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id,task_id,execution_date, subdir))
+    log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))
     logging.shutdown()
     #
     try:
-        newpid = os.fork()
-        if newpid == 0:
-            out = run(dag_id, task_id, execution_date, subdir)
-            # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
-            # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
-            if out.state == 'success':
-                return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date), status.HTTP_200_OK
-            else:
-                return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
+        # newpid = os.fork()
+        run_func = partial(run, dag_id, task_id, execution_date, subdir)
+        out = yield loop.run_in_executor(executor, run_func)
+        # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
+        # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
+        if out.state == 'success':
+            return "successfully ran dag {} for task {} on date {}".format(dag_id, task_id,
+                                                                           execution_date), status.HTTP_200_OK
+        else:
+            return "task failed", status.HTTP_500_INTERNAL_SERVER_ERROR
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
