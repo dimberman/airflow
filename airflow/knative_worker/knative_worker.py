@@ -53,14 +53,14 @@ async def run_task(request):
         # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
         # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
         if out.state == 'success':
-            web.Response(body="successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date),
+            return web.Response(body="successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date),
                          status=200)
         else:
-            web.Response(body="task failed", status=500)
+            return web.Response(body="task failed", status=500)
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
-        web.Response(body="failed {} {}".format(e, tb), status=500)
+        return web.Response(body="failed {} {}".format(e, tb), status=500)
 
 
 def process_subdir(subdir):
