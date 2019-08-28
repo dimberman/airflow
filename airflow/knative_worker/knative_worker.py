@@ -33,14 +33,15 @@ from aiohttp import web
 
 
 async def health(request):
-    return web.Response(text="Hello, world")
+    name =request.rel_url.query["name"]
+    return web.Response(text="Hello, {}".format(name))
 
 
 async def run_task(request):
-    dag_id = request.match_info('dag_id')
-    task_id = request.match_info('task_id')
-    subdir = request.match_info('subdir')
-    execution_date = datetime.fromtimestamp(int(request.args.get("execution_date")))
+    dag_id = request.rel_url.query['dag_id']
+    task_id = request.rel_url.query['task_id']
+    subdir = request.rel_url.query['subdir']
+    execution_date = datetime.fromtimestamp(int(request.rel_url.query["execution_date"]))
     log = LoggingMixin().log
     #
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))
