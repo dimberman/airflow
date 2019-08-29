@@ -7,6 +7,9 @@ metadata:
 spec:
   template:
     metadata:
+      annotations:
+         autoscaling.knative.dev/target: "1"
+#        autoscaling.knative.dev/minScale: "4"
       labels:
         name: airflow-knative
 #        serving.knative.dev/visibility: cluster-local

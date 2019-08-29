@@ -30,5 +30,5 @@ then
 fi
 if [[ "$1" = "knative_worker" ]]
 then
-	exec airflow knative_worker
+	exec gunicorn airflow.knative_worker.knative_worker:create_app -w 8 --bind 0.0.0.0:8080 --worker-class aiohttp.worker.GunicornWebWorker
 fi

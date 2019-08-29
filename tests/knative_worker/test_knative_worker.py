@@ -34,6 +34,7 @@ from requests import Response
 from asyncio import Future
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+import aiohttp
 
 loop: asyncio.AbstractEventLoop = None
 executor = None
@@ -52,10 +53,9 @@ def make_request(task_id):
     return requests.get(req, params, headers={"Host": "airflow-knative.default.example.com"})
 
 
-async def make_request_async(task_id) -> Response:
+async def make_request_async(task_id) -> aiohttp.ClientResponse:
     req = 'http://35.245.62.83/run'
     date = int(datetime.datetime.timestamp(datetime.datetime.now()))
-
     params = {
         "task_id": task_id,
         "dag_id": 'my_dag',
@@ -63,9 +63,11 @@ async def make_request_async(task_id) -> Response:
         "subdir": "/root/airflow/dags"
     }
 
-    req_func = partial(requests.get, req, params, headers={"Host": "airflow-knative.default.example.com"})
-    return await loop.run_in_executor(None, req_func)
-
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=req, params=params, headers={"Host": "airflow-knative.default.example.com"}) as resp:
+            print(resp.status)
+            print(await resp.text())
+            return resp
 
 async def request(dag_id, task_id, execution_date, app):
     query_string = "dag_id={}&task_id={}&execution_date={}".format(dag_id, task_id, execution_date)
@@ -121,9 +123,12 @@ class TestKnativeWorker(unittest.TestCase):
         self.assertEqual(200, resp.status_code)
 
     def test_execute_lots_of_work(self):
+        tasks=[]
         for i in range(0, 20):
-            resp = make_request("runme_" + str(i))
-            self.assertEqual(200, resp.status_code)
+            tasks.append(make_request_async("runme_" + str(i)))
+        results = loop.run_until_complete(asyncio.gather(*tasks))
+        for result in results:
+            self.assertEqual(200, result.status)
 
     def test_execute_lots_of_work_async(self):
         tasks = []

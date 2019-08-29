@@ -46,12 +46,8 @@ async def run_task(request):
     #
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))
     logging.shutdown()
-    #
     try:
-        # newpid = os.fork()
         out = run(dag_id, task_id, execution_date, subdir)
-        # run(dag_id=dag_id, task_id=task_id, subdir=subdir, execution_date=execution_date)
-        # loop.run_until_complete(run(dag_id=dag_id, task_id=task_id, execution_date=datetime.now()))
         if out.state == 'success':
             return web.Response(body="successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date),
                          status=200)
@@ -129,11 +125,11 @@ def set_task_instance_to_running(ti):
     session.commit()
 
 
-def create_app():
+async def create_app():
     global loop, app, executor
     loop = asyncio.get_event_loop()
     executor = ProcessPoolExecutor()
     loop.set_default_executor(executor)
-    app = web.Application(loop=loop)
+    app = web.Application()
     app.add_routes([web.get('/health', health), web.get('/run', run_task)])
     return app
