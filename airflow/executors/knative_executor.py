@@ -60,7 +60,25 @@ from airflow.utils.dag_processing import SimpleTaskInstance
 from asyncio.futures import Future
 from functools import partial
 from requests import Response
+import aiohttp
 
+
+
+async def make_request_async(task_id, dag_id, ) -> aiohttp.ClientResponse:
+    req = 'http://35.245.62.83/run'
+    date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+    params = {
+        "task_id": task_id,
+        "dag_id": 'my_dag',
+        "execution_date": date,
+        "subdir": "/root/airflow/dags"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=req, params=params, headers={"Host": "airflow-knative.default.example.com"}) as resp:
+            print(resp.status)
+            print(await resp.text())
+            return resp
 
 
 class KnativeExecutor(BaseExecutor):
@@ -69,21 +87,8 @@ class KnativeExecutor(BaseExecutor):
     multiprocessing Python library and queues to parallelize the execution
     of tasks.
     """
-
-    async def make_request_async(self, task_id) -> Response:
-        req = 'http://35.245.62.83/run'
-        date = int(datetime.datetime.timestamp(datetime.datetime.now()))
-
-        params = {
-            "task_id": task_id,
-            "dag_id": 'my_dag',
-            "execution_date": date,
-            "subdir": "/root/airflow/dags"
-        }
-
-        req_func = partial(requests.get, req, params, headers={"Host": "airflow-knative.default.example.com"})
-        return await self.loop.run_in_executor(None, req_func)
-
+    task_queue: multiprocessing.Queue = None
+    result_queue: multiprocessing.Queue = None
     def terminate(self):
         pass
 
@@ -95,7 +100,7 @@ class KnativeExecutor(BaseExecutor):
 
         super().__init__()
 
-    async def execute_work(self, key, task_instance: SimpleTaskInstance = None):
+     def execute_work(self, key, task_instance: SimpleTaskInstance = None):
         """
         Executes command received and stores result state in queue.
         :param task_instance:
@@ -136,23 +141,27 @@ class KnativeExecutor(BaseExecutor):
     def start(self):
         self.manager = multiprocessing.Manager()
         self.result_queue = self.manager.Queue()
-        self.task_queue = self.manager.Queue()
+        self.task_queue:multiprocessing.Queue = self.manager.Queue()
         self.workers = []
 
-    def execute_group_async(self,
-                            task_instances=None):
-        tasks = []
-        for t in task_instances:
+    async def execute_group_async(self,
+                            task_instances:multiprocessing.Queue=None):
+        tasks_to_run = []
+        while not task_instances.empty():
+            tasks_to_run.append(task_instances.get())
+        for t in tasks_to_run:
+            await make_request_async(t.task_id, t.dag_id)
             (key, ti) = t
             tasks.append(asyncio.ensure_future(self.execute_work(key=key, task_instance=ti)))
         self.loop.run_until_complete(asyncio.gather(*tasks))
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
+        self.task_queue.put(task_instance)
         # self.loop.run_until_complete(
         pass
 
     def sync(self):
-        # self.execute_group_async(self.task_queue())
+        self.execute_group_async(self.task_queue)
         while not self.result_queue.empty():
             try:
                 results = self.result_queue.get_nowait()

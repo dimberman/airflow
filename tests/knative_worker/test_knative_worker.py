@@ -124,7 +124,7 @@ class TestKnativeWorker(unittest.TestCase):
 
     def test_execute_lots_of_work(self):
         tasks=[]
-        for i in range(0, 20):
+        for i in range(0, 40):
             tasks.append(make_request_async("runme_" + str(i)))
         results = loop.run_until_complete(asyncio.gather(*tasks))
         for result in results:
@@ -136,9 +136,8 @@ class TestKnativeWorker(unittest.TestCase):
             # for i in range(0, 20):
             tasks.append(asyncio.ensure_future(make_request_async("runme_"+str(i))))
         results = loop.run_until_complete(asyncio.gather(*tasks))
-        status_codes = [result.status_code for result in results]
+        status_codes = [result.status for result in results]
         correct = status_codes.count(200)
         incorrect = status_codes.count(500)
         for result in results:
-            self.assertEqual(200, result.status_code)
-        print(results)
+            self.assertEqual(200, result.status)
