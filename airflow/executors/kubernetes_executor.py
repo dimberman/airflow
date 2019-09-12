@@ -121,6 +121,8 @@ class KubeConfig:  # pylint: disable=too-many-instance-attributes
         # DAGs directly
         self.dags_volume_claim = conf.get(self.kubernetes_section, 'dags_volume_claim')
 
+        self.knative_mode = False
+
         # This prop may optionally be set for PV Claims and is used to write logs
         self.logs_volume_claim = conf.get(self.kubernetes_section, 'logs_volume_claim')
 
@@ -327,6 +329,10 @@ class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin):
             )
 
 
+def _create_knative_request(command, dag_id, execution_date, kube_executor_config, task_id, try_number):
+    pass
+
+
 class AirflowKubernetesScheduler(LoggingMixin):
     """Airflow Scheduler for Kubernetes"""
     def __init__(self, kube_config, task_queue, result_queue, kube_client, worker_uuid):
@@ -369,8 +375,27 @@ class AirflowKubernetesScheduler(LoggingMixin):
         """
         self.log.info('Kubernetes job is %s', str(next_job))
         key, command, kube_executor_config = next_job
-        dag_id, task_id, execution_date, try_number = key
+        dag_id, task_id, execution_date, try_number, queue = key
+        if not self.kube_config.knative_mode:
+            self._create_k8s_pod(command, dag_id, execution_date, kube_executor_config, task_id, try_number)
+        elif queue is not None:
+            import functools
+            target = functools.partial(_create_knative_request,
+                                       command,
+                                       dag_id,
+                                       execution_date,
+                                       kube_executor_config,
+                                       task_id,
+                                       try_number)
+            p = multiprocessing.Process(target=target)
+            p.run()
+        else:
+            self._create_k8s_pod(command, dag_id, execution_date, kube_executor_config, task_id, try_number)
 
+        self.log.debug("Kubernetes Job created!")
+
+
+    def _create_k8s_pod(self, command, dag_id, execution_date, kube_executor_config, task_id, try_number):
         config_pod = self.worker_configuration.make_pod(
             namespace=self.namespace,
             worker_uuid=self.worker_uuid,
@@ -386,10 +411,8 @@ class AirflowKubernetesScheduler(LoggingMixin):
         pod = PodGenerator.reconcile_pods(config_pod, kube_executor_config)
         self.log.debug("Kubernetes running for command %s", command)
         self.log.debug("Kubernetes launching image %s", pod.spec.containers[0].image)
-
         # the watcher will monitor pods, so we do not block.
         self.launcher.run_pod_async(pod, **self.kube_config.kube_client_request_args)
-        self.log.debug("Kubernetes Job created!")
 
     def delete_pod(self, pod_id: str) -> None:
         """Deletes POD"""
@@ -705,7 +728,7 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
         )
 
         kube_executor_config = PodGenerator.from_obj(executor_config)
-        self.task_queue.put((key, command, kube_executor_config))
+        self.task_queue.put((key, command, kube_executor_config, queue))
 
     def sync(self):
         """Synchronize task state."""
