@@ -19,6 +19,7 @@ from airflow.utils.net import get_hostname
 from airflow.utils.state import State
 from concurrent.futures import ProcessPoolExecutor
 
+import pendulum
 app = None  # type: Any
 loop: asyncio.AbstractEventLoop = None
 pool = None
@@ -36,12 +37,17 @@ async def health(request):
     name =request.rel_url.query["name"]
     return web.Response(text="Hello, {}".format(name))
 
+def myconverter(o):
+    if isinstance(o, datetime):
+        return o.__str__()
 
 async def run_task(request):
     dag_id = request.rel_url.query['dag_id']
     task_id = request.rel_url.query['task_id']
-    subdir = request.rel_url.query['subdir']
-    execution_date = datetime.fromtimestamp(int(request.rel_url.query["execution_date"]))
+    # subdir = request.rel_url.query['subdir']
+    subdir = "/Users/dimberman/airflow/dags"
+
+    execution_date = pendulum.fromtimestamp(int(request.rel_url.query["execution_date"]))
     log = LoggingMixin().log
     #
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))

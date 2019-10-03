@@ -164,6 +164,9 @@ class BaseExecutor(LoggingMixin):
         self.running.pop(key, None)
         self.event_buffer[key] = state
 
+    def set_not_running(self,key):
+        self.running.pop(key, None)
+
     def fail(self, key):
         self.change_state(key, State.FAILED)
 

@@ -64,18 +64,20 @@ import aiohttp
 
 
 
-async def make_request_async(task_id, dag_id, ) -> aiohttp.ClientResponse:
-    req = 'http://35.245.62.83/run'
-    date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+async def make_request_async(task_id, dag_id, execution_date) -> aiohttp.ClientResponse:
+    # req = 'http://35.245.62.83/run'
+    req = "http://localhost:8084/run"
+    date = int(datetime.datetime.timestamp(execution_date))
     params = {
         "task_id": task_id,
-        "dag_id": 'my_dag',
+        "dag_id": dag_id,
         "execution_date": date,
-        "subdir": "/root/airflow/dags"
+        # "subdir": "/root/airflow/dags "
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=req, params=params, headers={"Host": "airflow-knative.default.example.com"}) as resp:
+        # async with session.get(url=req, params=params, headers={"Host": "airflow-knative.default.example.com"}) as resp:
+        async with session.get(url=req, params=params, ) as resp:
             print(resp.status)
             print(await resp.text())
             return resp
@@ -100,7 +102,24 @@ class KnativeExecutor(BaseExecutor):
 
         super().__init__()
 
-     def execute_work(self, key, task_instance: SimpleTaskInstance = None):
+    async def make_request_async(self, task_id) -> aiohttp.ClientResponse:
+        req = 'http://localhost:8081/run'
+        date = int(datetime.datetime.timestamp(datetime.datetime.now()))
+        params = {
+            "task_id": task_id,
+            "dag_id": 'my_dag',
+            "execution_date": date,
+            "subdir": "/root/airflow/dags"
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=req, params=params,
+                                   headers={"Host": "airflow-knative.default.example.com"}) as resp:
+                print(resp.status)
+                print(await resp.text())
+                return resp
+
+    async def execute_work(self, key, task_instance: SimpleTaskInstance = None):
         """
         Executes command received and stores result state in queue.
         :param task_instance:
@@ -114,7 +133,7 @@ class KnativeExecutor(BaseExecutor):
         self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
             date = int(datetime.datetime.timestamp(task_instance.execution_date))
-            req = 'http://airflow-knative.default/run'
+            req = 'http://localhost:8081/run'
             params = {
                 "task_id": task_instance.task_id,
                 "dag_id": task_instance.dag_id,
@@ -122,17 +141,19 @@ class KnativeExecutor(BaseExecutor):
                 "subdir": "/root/airflow/dags"
             }
             self.log.info(
-                "expected request {}/run?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
+                "expected request {}?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
                                                                                         task_instance.dag_id, date))
-            future = self.make_request_async(task_instance.task_id)
-            resp: requests.Response = await future
-            if resp.status_code != 200:
+            future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date)
+            resp: aiohttp.ClientResponse = await future
+            if resp.status != 200:
                 state = State.FAILED
                 self.log.error("Failed to execute task %s.", str(resp.text))
                 self.result_queue.put((key, state))
             else:
                 self.log.info("assuming task success")
                 # self.result_queue.put((key, None))
+                self.set_not_running(key=key)
+
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
@@ -144,23 +165,25 @@ class KnativeExecutor(BaseExecutor):
         self.task_queue:multiprocessing.Queue = self.manager.Queue()
         self.workers = []
 
-    async def execute_group_async(self,
+    def execute_group_async(self,
                             task_instances:multiprocessing.Queue=None):
         tasks_to_run = []
+        tasks = []
         while not task_instances.empty():
             tasks_to_run.append(task_instances.get())
         for t in tasks_to_run:
-            await make_request_async(t.task_id, t.dag_id)
             (key, ti) = t
+            make_request_async(ti.task_id, ti.dag_id, ti.execution_date)
             tasks.append(asyncio.ensure_future(self.execute_work(key=key, task_instance=ti)))
         self.loop.run_until_complete(asyncio.gather(*tasks))
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.task_queue.put(task_instance)
+        self.task_queue.put((key, task_instance))
         # self.loop.run_until_complete(
         pass
 
     def sync(self):
+        # print(" ")
         self.execute_group_async(self.task_queue)
         while not self.result_queue.empty():
             try:
