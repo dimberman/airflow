@@ -21,7 +21,6 @@ LocalExecutor runs tasks by spawning processes in a controlled fashion in differ
 modes. Given that BaseExecutor has the option to receive a `parallelism` parameter to
 limit the number of process spawned, when this parameter is `0` the number of processes
 that LocalExecutor can spawn is unlimited.
-
 The following strategies are implemented:
 1. Unlimited Parallelism (self.parallelism == 0): In this strategy, LocalExecutor will
 spawn a process every time `execute_async` is called, that is, every task submitted to the
@@ -29,7 +28,6 @@ LocalExecutor will be executed in its own process. Once the task is executed and
 result stored in the `result_queue`, the process terminates. There is no need for a
 `task_queue` in this approach, since as soon as a task is received a new process will be
 allocated to the task. Processes used in this strategy are of class LocalWorker.
-
 2. Limited Parallelism (self.parallelism > 0): In this strategy, the LocalExecutor spawns
 the number of processes equal to the value of `self.parallelism` at `start` time,
 using a `task_queue` to coordinate the ingestion of tasks and the work distribution among
@@ -37,7 +35,6 @@ the workers, which will take a task as soon as they are ready. During the lifecy
 the LocalExecutor, the worker processes are running waiting for tasks, once the
 LocalExecutor receives the call to shutdown the executor a poison token is sent to the
 workers to terminate them. Processes used in this strategy are of class QueuedLocalWorker.
-
 Arguably, `SequentialExecutor` could be thought as a LocalExecutor with limited
 parallelism of just 1 worker, i.e. `self.parallelism = 1`.
 This option could lead to the unification of the executor implementations, running
@@ -46,32 +43,67 @@ locally, into just one `LocalExecutor` with multiple modes.
 
 import multiprocessing
 import subprocess
+
 from queue import Empty
 
 from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import State
+import asyncio
+import datetime
+from concurrent.futures import ProcessPoolExecutor
+import requests
+from airflow.utils.dag_processing import SimpleTaskInstance
+from asyncio.futures import Future
+from functools import partial
+from requests import Response
+import aiohttp
 
 
-class LocalWorker(multiprocessing.Process, LoggingMixin):
+async def make_request_async(task_id, dag_id, execution_date) -> aiohttp.ClientResponse:
+    # req = 'http://35.245.62.83/run'
+    req = "http://localhost:8081/run"
+    date = int(datetime.datetime.timestamp(execution_date))
+    params = {
+        "task_id": task_id,
+        "dag_id": dag_id,
+        "execution_date": date,
+        # "subdir": "/root/airflow/dags "
+    }
 
-    """LocalWorker Process implementation to run airflow commands. Executes the given
-    command and puts the result into a result queue when done, terminating execution."""
+    async with aiohttp.ClientSession() as session:
+        # async with session.get(url=req, params=params, headers={"Host": "airflow-knative.default.example.com"}) as resp:
+        async with session.get(url=req, params=params, ) as resp:
+            print(resp.status)
+            print(await resp.text())
+            return resp
 
-    def __init__(self, result_queue):
-        """
-        :param result_queue: the queue to store result states tuples (key, State)
-        :type result_queue: multiprocessing.Queue
-        """
+
+class LocalExecutor(BaseExecutor):
+    """
+    KnativeExecutor executes tasks locally in parallel. It uses the
+    multiprocessing Python library and queues to parallelize the execution
+    of tasks.
+    """
+    task_queue: multiprocessing.Queue = None
+    result_queue: multiprocessing.Queue = None
+
+    def terminate(self):
+        pass
+
+    def __init__(self):
+        loop = asyncio.get_event_loop()
+        self.manager = multiprocessing.Manager()
+        self.result_queue = self.manager.Queue()
+        self.loop = loop
+        self.pool = multiprocessing.Pool(processes=10)
+
         super().__init__()
-        self.daemon = True
-        self.result_queue = result_queue
-        self.key = None
-        self.command = None
 
-    def execute_work(self, key, command):
+    async def execute_work(self, key, task_instance: SimpleTaskInstance = None):
         """
         Executes command received and stores result state in queue.
+        :param task_instance:
         :param key: the key to identify the TI
         :type key: tuple(dag_id, task_id, execution_date)
         :param command: the command to execute
@@ -79,152 +111,68 @@ class LocalWorker(multiprocessing.Process, LoggingMixin):
         """
         if key is None:
             return
-        self.log.info("%s running %s", self.__class__.__name__, command)
+        self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
-            subprocess.check_call(command, close_fds=True)
-            state = State.SUCCESS
-        except subprocess.CalledProcessError as e:
+            date = int(datetime.datetime.timestamp(task_instance.execution_date))
+            req = 'http://localhost:8081/run'
+            params = {
+                "task_id": task_instance.task_id,
+                "dag_id": task_instance.dag_id,
+                "execution_date": date,
+                "subdir": "/root/airflow/dags"
+            }
+            self.log.info(
+                "expected request {}?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
+                                                                                    task_instance.dag_id, date))
+            future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date)
+            resp: aiohttp.ClientResponse = await future
+            if resp.status != 200:
+                state = State.FAILED
+                self.log.error("Failed to execute task %s.", str(resp.text))
+                self.result_queue.put((key, state))
+            else:
+                self.log.info("assuming task success")
+                # self.result_queue.put((key, None))
+                self.set_not_running(key=key)
+
+        except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
-        self.result_queue.put((key, state))
-
-    def run(self):
-        self.execute_work(self.key, self.command)
-
-
-class QueuedLocalWorker(LocalWorker):
-
-    """LocalWorker implementation that is waiting for tasks from a queue and will
-    continue executing commands as they become available in the queue. It will terminate
-    execution once the poison token is found."""
-
-    def __init__(self, task_queue, result_queue):
-        super().__init__(result_queue=result_queue)
-        self.task_queue = task_queue
-
-    def run(self):
-        while True:
-            key, command = self.task_queue.get()
-            try:
-                if key is None:
-                    # Received poison pill, no more tasks to run
-                    break
-                self.execute_work(key, command)
-            finally:
-                self.task_queue.task_done()
-
-
-class LocalExecutor(BaseExecutor):
-    """
-    LocalExecutor executes tasks locally in parallel. It uses the
-    multiprocessing Python library and queues to parallelize the execution
-    of tasks.
-    """
-
-    class _UnlimitedParallelism:
-        """Implements LocalExecutor with unlimited parallelism, starting one process
-        per each command to execute."""
-
-        def __init__(self, executor):
-            """
-            :param executor: the executor instance to implement.
-            :type executor: LocalExecutor
-            """
-            self.executor = executor
-
-        def start(self):
-            self.executor.workers_used = 0
-            self.executor.workers_active = 0
-
-        def execute_async(self, key, command):
-            """
-            :param key: the key to identify the TI
-            :type key: tuple(dag_id, task_id, execution_date)
-            :param command: the command to execute
-            :type command: str
-            """
-            local_worker = LocalWorker(self.executor.result_queue)
-            local_worker.key = key
-            local_worker.command = command
-            self.executor.workers_used += 1
-            self.executor.workers_active += 1
-            local_worker.start()
-
-        def sync(self):
-            while not self.executor.result_queue.empty():
-                results = self.executor.result_queue.get()
-                self.executor.change_state(*results)
-                self.executor.workers_active -= 1
-
-        def end(self):
-            while self.executor.workers_active > 0:
-                self.executor.sync()
-
-    class _LimitedParallelism:
-        """Implements LocalExecutor with limited parallelism using a task queue to
-        coordinate work distribution."""
-
-        def __init__(self, executor):
-            self.executor = executor
-
-        def start(self):
-            self.queue = self.executor.manager.Queue()
-            self.executor.workers = [
-                QueuedLocalWorker(self.queue, self.executor.result_queue)
-                for _ in range(self.executor.parallelism)
-            ]
-
-            self.executor.workers_used = len(self.executor.workers)
-
-            for w in self.executor.workers:
-                w.start()
-
-        def execute_async(self, key, command):
-            """
-            :param key: the key to identify the TI
-            :type key: tuple(dag_id, task_id, execution_date)
-            :param command: the command to execute
-            :type command: str
-            """
-            self.queue.put((key, command))
-
-        def sync(self):
-            while True:
-                try:
-                    results = self.executor.result_queue.get_nowait()
-                    try:
-                        self.executor.change_state(*results)
-                    finally:
-                        self.executor.result_queue.task_done()
-                except Empty:
-                    break
-
-        def end(self):
-            # Sending poison pill to all worker
-            for _ in self.executor.workers:
-                self.queue.put((None, None))
-
-            # Wait for commands to finish
-            self.queue.join()
-            self.executor.sync()
+            self.result_queue.put((key, state))
 
     def start(self):
         self.manager = multiprocessing.Manager()
         self.result_queue = self.manager.Queue()
+        self.task_queue: multiprocessing.Queue = self.manager.Queue()
         self.workers = []
-        self.workers_used = 0
-        self.workers_active = 0
-        self.impl = (LocalExecutor._UnlimitedParallelism(self) if self.parallelism == 0
-                     else LocalExecutor._LimitedParallelism(self))
 
-        self.impl.start()
+    def execute_group_async(self,
+                            task_instances: multiprocessing.Queue = None):
+        tasks_to_run = []
+        tasks = []
+        while not task_instances.empty():
+            tasks_to_run.append(task_instances.get())
+        for t in tasks_to_run:
+            (key, ti) = t
+            make_request_async(ti.task_id, ti.dag_id, ti.execution_date)
+            tasks.append(asyncio.ensure_future(self.execute_work(key=key, task_instance=ti)))
+        self.loop.run_until_complete(asyncio.gather(*tasks))
 
-    def execute_async(self, key, command, queue=None, executor_config=None):
-        self.impl.execute_async(key=key, command=command)
+    def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
+        self.task_queue.put((key, task_instance))
+        # self.loop.run_until_complete(
+        pass
 
     def sync(self):
-        self.impl.sync()
+        # print(" ")
+        self.execute_group_async(self.task_queue)
+        while not self.result_queue.empty():
+            try:
+                results = self.result_queue.get_nowait()
+                self.change_state(*results)
+            except Empty:
+                break
 
     def end(self):
-        self.impl.end()
+        self.sync()
         self.manager.shutdown()

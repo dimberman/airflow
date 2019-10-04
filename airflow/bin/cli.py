@@ -251,8 +251,8 @@ def delete_dag(args):
     """
     log = LoggingMixin().log
     if args.yes or input(
-            "This will drop all existing records related to the specified DAG. "
-            "Proceed? (y/n)").upper() == "Y":
+        "This will drop all existing records related to the specified DAG. "
+        "Proceed? (y/n)").upper() == "Y":
         try:
             message = api_client.delete_dag(dag_id=args.dag_id)
         except OSError as err:
@@ -679,7 +679,7 @@ def rotate_fernet_key(args):
     """Rotates all encrypted connection credentials and variables"""
     with db.create_session() as session:
         for conn in session.query(Connection).filter(
-                Connection.is_encrypted | Connection.is_extra_encrypted):
+            Connection.is_encrypted | Connection.is_extra_encrypted):
             conn.rotate_fernet_key()
         for var in session.query(Variable).filter(Variable.is_encrypted):
             var.rotate_fernet_key()
@@ -874,7 +874,7 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
             if 0 < timeout <= time.time() - start_time:
                 raise AirflowWebServerTimeout(
                     "No response from gunicorn master within {0} seconds"
-                    .format(timeout))
+                        .format(timeout))
             time.sleep(0.1)
 
     def start_refresh(gunicorn_master_proc):
@@ -888,12 +888,12 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
             gunicorn_master_proc.send_signal(signal.SIGTTIN)
             excess += 1
             wait_until_true(lambda: num_workers_expected + excess ==
-                            get_num_workers_running(gunicorn_master_proc),
+                                    get_num_workers_running(gunicorn_master_proc),
                             master_timeout)
 
     try:  # pylint: disable=too-many-nested-blocks
         wait_until_true(lambda: num_workers_expected ==
-                        get_num_workers_running(gunicorn_master_proc),
+                                get_num_workers_running(gunicorn_master_proc),
                         master_timeout)
         while True:
             num_workers_running = get_num_workers_running(gunicorn_master_proc)
@@ -917,7 +917,7 @@ def restart_workers(gunicorn_master_proc, num_workers_expected, master_timeout):
                     gunicorn_master_proc.send_signal(signal.SIGTTOU)
                     excess -= 1
                     wait_until_true(lambda: num_workers_expected + excess ==
-                                    get_num_workers_running(gunicorn_master_proc),
+                                            get_num_workers_running(gunicorn_master_proc),
                                     master_timeout)
 
             # Start a new worker by asking gunicorn to increase number of workers
@@ -1084,6 +1084,16 @@ def webserver(args):
             signal.signal(signal.SIGTERM, kill_proc)
 
             monitor_gunicorn(gunicorn_master_proc)
+
+
+@cli_utils.action_logging
+def airflow_worker(args):
+    # port = args.
+    from airflow.worker import airflow_worker
+    app = airflow_worker.create_app()
+    from aiohttp import web
+    web.run_app(app)
+    # app.run(debug=True, use_reloader=False, port=8080, host="0.0.0.0")
 
 
 @cli_utils.action_logging
@@ -1296,18 +1306,18 @@ def connections_add(args):
 
     with db.create_session() as session:
         if not (session.query(Connection)
-                .filter(Connection.conn_id == new_conn.conn_id).first()):
+            .filter(Connection.conn_id == new_conn.conn_id).first()):
             session.add(new_conn)
             msg = '\n\tSuccessfully added `conn_id`={conn_id} : {uri}\n'
             msg = msg.format(conn_id=new_conn.conn_id,
                              uri=args.conn_uri or
-                             urlunparse((args.conn_type,
-                                         '{login}:{password}@{host}:{port}'
+                                 urlunparse((args.conn_type,
+                                             '{login}:{password}@{host}:{port}'
                                              .format(login=args.conn_login or '',
                                                      password=args.conn_password or '',
                                                      host=args.conn_host or '',
                                                      port=args.conn_port or ''),
-                                         args.conn_schema or '', '', '', '')))
+                                             args.conn_schema or '', '', '', '')))
             print(msg)
         else:
             msg = '\n\tA connection with `conn_id`={conn_id} already exists\n'
@@ -1535,8 +1545,8 @@ def users_export(args):
 
     users = [
         {remove_underscores(field): user.__getattribute__(field)
-            if field != 'roles' else [r.name for r in user.roles]
-            for field in fields}
+        if field != 'roles' else [r.name for r in user.roles]
+         for field in fields}
         for user in users
     ]
 
@@ -1897,7 +1907,7 @@ class CLIFactory:
             "airflow dags show <DAG_ID> --save output.dot\n"
         ),
         'imgcat': Arg(
-            ("--imgcat", ),
+            ("--imgcat",),
             "Displays graph using the imgcat tool. \n"
             "\n"
             "For more information, see: https://www.iterm2.com/documentation-images.html",
@@ -2201,7 +2211,7 @@ class CLIFactory:
             ("import",),
             metavar="FILEPATH",
             help="Import users from JSON file. Example format:" +
-                    textwrap.dedent('''
+                 textwrap.dedent('''
                     [
                         {
                             "email": "foo@bar.org",
@@ -2521,6 +2531,11 @@ class CLIFactory:
             'help': "Start a Celery Flower",
             'args': ('flower_hostname', 'flower_port', 'flower_conf', 'flower_url_prefix',
                      'flower_basic_auth', 'broker_api', 'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
+        },
+        {
+            'func': airflow_worker,
+            'help': 'starts a knative worker',
+            'args': (),
         }, {
             'func': version,
             'help': "Show the version",
