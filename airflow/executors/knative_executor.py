@@ -63,10 +63,9 @@ from requests import Response
 import aiohttp
 
 
-
 async def make_request_async(task_id, dag_id, execution_date) -> aiohttp.ClientResponse:
     # req = 'http://35.245.62.83/run'
-    req = "http://localhost:8084/run"
+    req = "http://localhost:8085/run"
     date = int(datetime.datetime.timestamp(execution_date))
     params = {
         "task_id": task_id,
@@ -91,6 +90,7 @@ class KnativeExecutor(BaseExecutor):
     """
     task_queue: multiprocessing.Queue = None
     result_queue: multiprocessing.Queue = None
+
     def terminate(self):
         pass
 
@@ -142,7 +142,7 @@ class KnativeExecutor(BaseExecutor):
             }
             self.log.info(
                 "expected request {}?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
-                                                                                        task_instance.dag_id, date))
+                                                                                    task_instance.dag_id, date))
             future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date)
             resp: aiohttp.ClientResponse = await future
             if resp.status != 200:
@@ -162,11 +162,11 @@ class KnativeExecutor(BaseExecutor):
     def start(self):
         self.manager = multiprocessing.Manager()
         self.result_queue = self.manager.Queue()
-        self.task_queue:multiprocessing.Queue = self.manager.Queue()
+        self.task_queue: multiprocessing.Queue = self.manager.Queue()
         self.workers = []
 
     def execute_group_async(self,
-                            task_instances:multiprocessing.Queue=None):
+                            task_instances: multiprocessing.Queue = None):
         tasks_to_run = []
         tasks = []
         while not task_instances.empty():
