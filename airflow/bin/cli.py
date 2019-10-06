@@ -1088,13 +1088,44 @@ def webserver(args):
 
 @cli_utils.action_logging
 def airflow_worker(args):
-    # port = args.
-    from airflow.worker import airflow_worker
-    app = airflow_worker.create_app()
-    from aiohttp import web
-    web.run_app(app)
-    # app.run(debug=True, use_reloader=False, port=8080, host="0.0.0.0")
+    num_workers = args.workers or 8
+    worker_timeout = (args.worker_timeout or
+                      conf.get('webserver', 'web_server_worker_timeout'))
+    hostname = args.hostname or "0.0.0.0"
+    port = args.port or "8081"
+    run_args = [
+        'gunicorn',
+        '-w', str(num_workers),
+        '-k', 'aiohttp.worker.GunicornWebWorker',
+        '-t', str(worker_timeout),
+        '-b', str(hostname) + ':' + str(port),
+        '-n', 'airflow-worker',
+        '-c', 'python:airflow.www.gunicorn_config',
+        'airflow.worker.airflow_worker:create_app'
+    ]
 
+    def monitor_gunicorn(gunicorn_master_proc):
+        # These run forever until SIG{INT, TERM, KILL, ...} signal is sent
+        if conf.getint('webserver', 'worker_refresh_interval') > 0:
+            master_timeout = conf.getint('webserver', 'web_server_master_timeout')
+            restart_workers(gunicorn_master_proc, num_workers, master_timeout)
+        else:
+            while gunicorn_master_proc.poll() is None:
+                time.sleep(1)
+
+            sys.exit(gunicorn_master_proc.returncode)
+
+    def kill_proc(dummy_signum, dummy_frame):
+        gunicorn_master_proc.terminate()
+        gunicorn_master_proc.wait()
+        sys.exit(0)
+
+    gunicorn_master_proc = subprocess.Popen(run_args, close_fds=True)
+
+    signal.signal(signal.SIGINT, kill_proc)
+    signal.signal(signal.SIGTERM, kill_proc)
+
+    monitor_gunicorn(gunicorn_master_proc)
 
 @cli_utils.action_logging
 def scheduler(args):
@@ -2535,7 +2566,7 @@ class CLIFactory:
         {
             'func': airflow_worker,
             'help': 'starts a knative worker',
-            'args': (),
+            'args': ('port', 'workers','worker_timeout','hostname'),
         }, {
             'func': version,
             'help': "Show the version",
