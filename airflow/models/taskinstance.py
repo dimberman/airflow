@@ -61,6 +61,7 @@ from airflow.utils.net import get_hostname
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
 from airflow.utils.timeout import timeout
+from datetime import datetime
 
 
 def clear_task_instances(tis,
@@ -157,6 +158,7 @@ class TaskInstance(Base, LoggingMixin):
     queued_dttm = Column(UtcDateTime)
     pid = Column(Integer)
     executor_config = Column(PickleType(pickler=dill))
+    last_heartbeat = Column(UtcDateTime)
 
     __table_args__ = (
         Index('ti_dag_state', dag_id, state),
@@ -229,6 +231,13 @@ class TaskInstance(Base, LoggingMixin):
     @property
     def next_try_number(self):
         return self._try_number + 1
+
+    @property
+    def last_hearbeat(self):
+        return self.last_hearbeat
+
+    def heartbeat(self, time = datetime.now()):
+        self.last_heartbeat = time
 
     def command(
             self,

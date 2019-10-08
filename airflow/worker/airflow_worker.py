@@ -47,6 +47,16 @@ import asyncio
 from aiohttp import web
 
 
+
+running_tasks_map = {}
+
+def heartbeat():
+    for k, v in running_tasks_map:
+        a: TaskInstance = v
+        a.heartbeat()
+
+
+
 async def health(request):
     name = request.rel_url.query["name"]
     return web.Response(text="Hello, {}".format(name))
