@@ -36,6 +36,7 @@ from airflow.utils.state import State
 from concurrent.futures import ProcessPoolExecutor
 
 import pendulum
+from contextlib import suppress
 
 app = None  # type: Any
 loop: asyncio.AbstractEventLoop = None
@@ -46,15 +47,19 @@ DAGS_FOLDER = settings.DAGS_FOLDER
 import asyncio
 from aiohttp import web
 
-
-
 running_tasks_map = {}
 
-def heartbeat():
-    for k, v in running_tasks_map:
-        a: TaskInstance = v
-        a.heartbeat()
+task = None
+num = 0
 
+async def heartbeat():
+    global running_tasks_map, num
+    while True:
+        num = num + 1
+        for k, v in running_tasks_map:
+            a: TaskInstance = v
+            await a.heartbeat(time=datetime.now())
+        await asyncio.sleep(5)
 
 
 async def health(request):
@@ -79,6 +84,18 @@ async def run_task(request):
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))
     logging.shutdown()
     try:
+        log = LoggingMixin().log
+
+        # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
+        # behind multiple open sleeping connections while heartbeating, which could
+        # easily exceed the database connection limit when
+        # processing hundreds of simultaneous tasks.
+        settings.configure_orm(disable_connection_pool=True)
+        ti = get_task_instance(dag_id=dag_id,
+                               task_id=task_id,
+                               subdir=subdir,
+                               execution_date=execution_date)
+        running_tasks_map[task_id] = ti
         out = run(dag_id, task_id, execution_date, subdir)
         if out.state == 'success':
             return web.Response(
@@ -158,11 +175,23 @@ def set_task_instance_to_running(ti):
     session.commit()
 
 
+async def on_shutdown(app):
+    global task
+    task.cancel()
+    with suppress(asyncio.CancelledError):
+        await task  # await for task cancellation
+
 async def create_app():
+    global task
     global loop, app, executor
+    task = asyncio.Task(heartbeat())
+
     loop = asyncio.get_event_loop()
     executor = ProcessPoolExecutor()
     loop.set_default_executor(executor)
     app = web.Application()
     app.add_routes([web.get('/health', health), web.get('/run', run_task)])
+    app.on_shutdown.append(on_shutdown)
     return app
+
+
