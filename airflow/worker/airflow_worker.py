@@ -49,8 +49,9 @@ from aiohttp import web
 
 running_tasks_map = {}
 
-task = None
+heartbeat_loop_task = None
 num = 0
+
 
 async def heartbeat():
     global running_tasks_map, num
@@ -63,8 +64,8 @@ async def heartbeat():
 
 
 async def health(request):
-    name = request.rel_url.query["name"]
-    return web.Response(text="Hello, {}".format(name))
+    name = request.rel_url.query.get("name", "Daniel")
+    return web.Response(text="Hello, {}. There have been {} heartbeats.".format(name, num))
 
 
 def myconverter(o):
@@ -96,7 +97,9 @@ async def run_task(request):
                                subdir=subdir,
                                execution_date=execution_date)
         running_tasks_map[task_id] = ti
-        out = run(dag_id, task_id, execution_date, subdir)
+        out = run(ti)
+        run_task_instance(ti, log)
+
         if out.state == 'success':
             return web.Response(
                 body="successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date),
@@ -107,6 +110,8 @@ async def run_task(request):
         import traceback
         tb = traceback.format_exc()
         return web.Response(body="failed {} {}".format(e, tb), status=500)
+    finally:
+        running_tasks_map.pop(task_id)
 
 
 def process_subdir(subdir):
@@ -138,11 +143,7 @@ def get_task_instance(
     return ti
 
 
-def run(dag_id: str,
-        task_id: str,
-        execution_date: datetime,
-        subdir: str = None,
-        ):
+def run(ti: TaskInstance):
     log = LoggingMixin().log
 
     # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
@@ -150,10 +151,7 @@ def run(dag_id: str,
     # easily exceed the database connection limit when
     # processing hundreds of simultaneous tasks.
     settings.configure_orm(disable_connection_pool=True)
-    ti = get_task_instance(dag_id=dag_id,
-                           task_id=task_id,
-                           subdir=subdir,
-                           execution_date=execution_date)
+
     run_task_instance(ti, log)
     logging.shutdown()
     return ti
@@ -176,15 +174,16 @@ def set_task_instance_to_running(ti):
 
 
 async def on_shutdown(app):
-    global task
-    task.cancel()
+    global heartbeat_loop_task
+    heartbeat_loop_task.cancel()
     with suppress(asyncio.CancelledError):
-        await task  # await for task cancellation
+        await heartbeat_loop_task  # await for task cancellation
+
 
 async def create_app():
-    global task
+    global heartbeat_loop_task
     global loop, app, executor
-    task = asyncio.Task(heartbeat())
+    heartbeat_loop_task = asyncio.Task(heartbeat())
 
     loop = asyncio.get_event_loop()
     executor = ProcessPoolExecutor()
@@ -193,5 +192,3 @@ async def create_app():
     app.add_routes([web.get('/health', health), web.get('/run', run_task)])
     app.on_shutdown.append(on_shutdown)
     return app
-
-

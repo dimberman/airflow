@@ -62,12 +62,12 @@ def my_sleeping_function(random_base):
 
 # Generate 5 sleeping tasks, sleeping from 0.0 to 0.4 seconds respectively
 for i in range(5):
-    task = PythonOperator(
+    heartbeat_loop_task = PythonOperator(
         task_id='sleep_for_' + str(i),
         python_callable=my_sleeping_function,
         op_kwargs={'random_base': float(i) / 10},
         dag=dag,
     )
 
-    run_this >> task
+    run_this >> heartbeat_loop_task
 # [END howto_operator_python_kwargs]

@@ -23,7 +23,7 @@ from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(dag_id='test_utils', schedule_interval=None)
 
-task = BashOperator(
+heartbeat_loop_task = BashOperator(
     task_id='sleeps_forever',
     dag=dag,
     bash_command="sleep 10000000000",

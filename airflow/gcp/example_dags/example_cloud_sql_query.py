@@ -282,14 +282,14 @@ with models.DAG(
     prev_task = None
 
     for connection_name in connection_names:
-        task = CloudSqlQueryOperator(
+        heartbeat_loop_task = CloudSqlQueryOperator(
             gcp_cloudsql_conn_id=connection_name,
             task_id="example_gcp_sql_task_" + connection_name,
             sql=SQL
         )
-        tasks.append(task)
+        tasks.append(heartbeat_loop_task)
         if prev_task:
-            prev_task >> task
-        prev_task = task
+            prev_task >> heartbeat_loop_task
+        prev_task = heartbeat_loop_task
 
 # [END howto_operator_cloudsql_query_operators]
