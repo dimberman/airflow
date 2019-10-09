@@ -236,7 +236,8 @@ class TaskInstance(Base, LoggingMixin):
     def last_hearbeat(self):
         return self.last_hearbeat
 
-    def heartbeat(self, time = datetime.now()):
+    @last_hearbeat.setter
+    def last_hearbeat(self, time = datetime.now()):
         self.last_heartbeat = time
 
     def command(
@@ -477,6 +478,7 @@ class TaskInstance(Base, LoggingMixin):
             self.max_tries = ti.max_tries
             self.hostname = ti.hostname
             self.pid = ti.pid
+            self.last_hearbeat = ti.last_heartbeat
             if refresh_executor_config:
                 self.executor_config = ti.executor_config
         else:
@@ -506,6 +508,13 @@ class TaskInstance(Base, LoggingMixin):
         self.state = state
         self.start_date = timezone.utcnow()
         self.end_date = timezone.utcnow()
+        session.merge(self)
+        if commit:
+            session.commit()
+
+    @provide_session
+    def heartbeat(self, time, session=None, commit=True):
+        self.last_hearbeat = time
         session.merge(self)
         if commit:
             session.commit()
