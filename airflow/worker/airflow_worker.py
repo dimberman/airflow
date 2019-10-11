@@ -68,22 +68,18 @@ async def health(request):
     return web.Response(text="Hello, {}. There have been {} heartbeats.".format(name, num))
 
 
-def myconverter(o):
-    if isinstance(o, datetime):
-        return o.__str__()
-
-
 async def run_task(request):
     dag_id = request.rel_url.query['dag_id']
     task_id = request.rel_url.query['task_id']
     # subdir = request.rel_url.query['subdir']
     subdir = "/Users/dimberman/airflow/dags"
-
+    response = None
     execution_date = pendulum.fromtimestamp(int(request.rel_url.query["execution_date"]))
     log = LoggingMixin().log
     #
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))
     logging.shutdown()
+    key = (task_id, dag_id, execution_date).__str__()
     try:
         log = LoggingMixin().log
 
@@ -96,22 +92,23 @@ async def run_task(request):
                                task_id=task_id,
                                subdir=subdir,
                                execution_date=execution_date)
-        running_tasks_map[task_id] = ti
+        running_tasks_map[key] = ti
         out = run(ti)
         run_task_instance(ti, log)
 
         if out.state == 'success':
-            return web.Response(
+            response = web.Response(
                 body="successfully ran dag {} for task {} on date {}".format(dag_id, task_id, execution_date),
                 status=200)
         else:
-            return web.Response(body="task failed", status=500)
+            response = web.Response(body="task failed", status=500)
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
-        return web.Response(body="failed {} {}".format(e, tb), status=500)
+        response = web.Response(body="failed {} {}".format(e, tb), status=500)
     finally:
-        running_tasks_map.pop(task_id)
+        running_tasks_map.pop(key)
+        return response
 
 
 def process_subdir(subdir):
@@ -175,9 +172,9 @@ def set_task_instance_to_running(ti):
 
 async def on_shutdown(app):
     global heartbeat_loop_task
-    heartbeat_loop_task.cancel()
-    with suppress(asyncio.CancelledError):
-        await heartbeat_loop_task  # await for task cancellation
+    # heartbeat_loop_task.cancel()
+    # with suppress(asyncio.CancelledError):
+    #     await heartbeat_loop_task  # await for task cancellation
 
 
 async def create_app():

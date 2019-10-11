@@ -58,47 +58,47 @@ from asyncio.futures import Future
 from functools import partial
 from requests import Response
 import aiohttp
-
+import functools
+import pickle
 
 async def make_request_async(task_id, dag_id, execution_date) -> aiohttp.ClientResponse:
     # req = 'http://35.245.62.83/run'
-    req = "http://localhost:8081/run"
+    req = "http://localhost:8082/run"
     date = int(datetime.datetime.timestamp(execution_date))
     params = {
         "task_id": task_id,
         "dag_id": dag_id,
         "execution_date": date,
-        # "subdir": "/root/airflow/dags "
     }
 
     async with aiohttp.ClientSession() as session:
-        # async with session.get(url=req, params=params, headers={"Host": "airflow-knative.default.example.com"}) as resp:
         async with session.get(url=req, params=params, ) as resp:
             print(resp.status)
             print(await resp.text())
             return resp
 
 
-class LocalExecutor(BaseExecutor):
-    """
-    KnativeExecutor executes tasks locally in parallel. It uses the
-    multiprocessing Python library and queues to parallelize the execution
-    of tasks.
-    """
-    task_queue: multiprocessing.Queue = None
-    result_queue: multiprocessing.Queue = None
-
-    def terminate(self):
-        pass
-
-    def __init__(self):
-        loop = asyncio.get_event_loop()
-        self.manager = multiprocessing.Manager()
-        self.result_queue = self.manager.Queue()
-        self.loop = loop
-        self.pool = multiprocessing.Pool(processes=10)
+class LocalExecutorLoop(multiprocessing.Process, LoggingMixin):
+    def __init__(self,
+                 task_pipe: multiprocessing.Pipe,
+                 result_pipe: multiprocessing.Pipe,
+                 pop_running_pipe: multiprocessing.Pipe
+                 ):
 
         super().__init__()
+        self.task_pipe = task_pipe
+        self.result_pipe = result_pipe
+        self.pop_running_pipe = pop_running_pipe
+
+    def recieve_and_execute(self, loop):
+        current_task = self.task_pipe.recv()
+        key, task_instance = current_task
+        loop.create_task(self.execute_work(key=key, task_instance=task_instance))
+
+    def run(self):
+        loop = asyncio.get_event_loop()
+        loop.add_reader(fd=self.task_pipe, callback=functools.partial(self.recieve_and_execute, loop))
+        loop.run_forever()
 
     async def execute_work(self, key, task_instance: SimpleTaskInstance = None):
         """
@@ -113,66 +113,64 @@ class LocalExecutor(BaseExecutor):
             return
         self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
-            date = int(datetime.datetime.timestamp(task_instance.execution_date))
-            req = 'http://localhost:8081/run'
-            params = {
-                "task_id": task_instance.task_id,
-                "dag_id": task_instance.dag_id,
-                "execution_date": date,
-                "subdir": "/root/airflow/dags"
-            }
-            self.log.info(
-                "expected request {}?task_id={}&dag_id={}&execution_date={}".format(req, task_instance.task_id,
-                                                                                    task_instance.dag_id, date))
             future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date)
             resp: aiohttp.ClientResponse = await future
             if resp.status != 200:
                 state = State.FAILED
                 self.log.error("Failed to execute task %s.", str(resp.text))
-                self.result_queue.put((key, state))
+                self.result_pipe.send((key, state))
             else:
                 self.log.info("assuming task success")
                 # self.result_queue.put((key, None))
-                self.set_not_running(key=key)
-
+                self.pop_running_pipe.send(key)
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
-            self.result_queue.put((key, state))
+            self.result_pipe.send((key, state))
 
-    def start(self):
-        self.manager = multiprocessing.Manager()
-        self.result_queue = self.manager.Queue()
-        self.task_queue: multiprocessing.Queue = self.manager.Queue()
-        self.workers = []
 
-    def execute_group_async(self,
-                            task_instances: multiprocessing.Queue = None):
-        tasks_to_run = []
-        tasks = []
-        while not task_instances.empty():
-            tasks_to_run.append(task_instances.get())
-        for t in tasks_to_run:
-            (key, ti) = t
-            make_request_async(ti.task_id, ti.dag_id, ti.execution_date)
-            tasks.append(asyncio.ensure_future(self.execute_work(key=key, task_instance=ti)))
-        self.loop.run_until_complete(asyncio.gather(*tasks))
+class TaskMessage:
+    def __init__(self, key, ti):
+        self.key = key
+        self.ti = ti
+class LocalExecutor(BaseExecutor):
+    """
+    KnativeExecutor executes tasks locally in parallel. It uses the
+    multiprocessing Python library and queues to parallelize the execution
+    of tasks.
+    """
+    task_queue: multiprocessing.Queue = None
+    result_queue: multiprocessing.Queue = None
+    result_pipe: multiprocessing.Pipe = None
+    pop_running_queue: multiprocessing.Pipe = None
 
-    def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.task_queue.put((key, task_instance))
-        # self.loop.run_until_complete(
+    def terminate(self):
         pass
 
+    def __init__(self):
+        super().__init__()
+
+    def start(self):
+        self.result_pipe, child_result_pipe = multiprocessing.Pipe()
+        self.task_pipe, child_task_pipe = multiprocessing.Pipe()
+        self.pop_running_pipe, child_pop_running_pipe = multiprocessing.Pipe()
+
+        self.local_loop = LocalExecutorLoop(
+            task_pipe=child_task_pipe,
+            result_pipe=child_result_pipe,
+            pop_running_pipe=child_pop_running_pipe
+        )
+        self.local_loop.start()
+
+    def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
+        self.task_pipe.send((key, task_instance))
+
     def sync(self):
-        # print(" ")
-        self.execute_group_async(self.task_queue)
-        while not self.result_queue.empty():
-            try:
-                results = self.result_queue.get_nowait()
-                self.change_state(*results)
-            except Empty:
-                break
+        while self.result_pipe.poll():
+            results = self.result_pipe.recv()
+            self.change_state(*results)
+        while self.pop_running_pipe.poll():
+            self.set_not_running(self.pop_running_pipe.recv())
 
     def end(self):
         self.sync()
-        self.manager.shutdown()

@@ -195,12 +195,12 @@ class BaseExecutor(LoggingMixin):
         """
         raise NotImplementedError()
 
-    def execute_group_async(self,
-                            task_instances=None):  # pragma: no cover
-        """
-        This method will execute the command asynchronously.
-        """
-        pass
+    # def execute_group_async(self,
+    #                         task_instances=None):  # pragma: no cover
+    #     """
+    #     This method will execute the command asynchronously.
+    #     """
+    #     pass
 
     def end(self):  # pragma: no cover
         """
