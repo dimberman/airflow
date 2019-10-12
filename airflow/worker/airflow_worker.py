@@ -43,6 +43,7 @@ loop: asyncio.AbstractEventLoop = None
 pool = None
 executor = None
 DAGS_FOLDER = settings.DAGS_FOLDER
+from aiohttp import web
 
 import asyncio
 from aiohttp import web
@@ -81,8 +82,6 @@ async def run_task(request):
     logging.shutdown()
     key = (task_id, dag_id, execution_date).__str__()
     try:
-        log = LoggingMixin().log
-
         # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
         # behind multiple open sleeping connections while heartbeating, which could
         # easily exceed the database connection limit when
@@ -187,5 +186,7 @@ async def create_app():
     loop.set_default_executor(executor)
     app = web.Application()
     app.add_routes([web.get('/health', health), web.get('/run', run_task)])
-    app.on_shutdown.append(on_shutdown)
     return app
+
+# application = create_app()
+# web.run_app(application, port=8082)

@@ -1089,8 +1089,9 @@ def webserver(args):
 @cli_utils.action_logging
 def airflow_worker(args):
     num_workers = args.workers or 8
-    worker_timeout = (args.worker_timeout or
-                      conf.get('webserver', 'web_server_worker_timeout'))
+    # worker_timeout = (args.worker_timeout or
+    #                   conf.get('webserver', 'web_server_worker_timeout'))
+    worker_timeout = 10000
     hostname = args.hostname or "0.0.0.0"
     port = args.port or "8081"
     run_args = [
@@ -1105,15 +1106,16 @@ def airflow_worker(args):
     ]
 
     def monitor_gunicorn(gunicorn_master_proc):
-        # These run forever until SIG{INT, TERM, KILL, ...} signal is sent
-        if conf.getint('webserver', 'worker_refresh_interval') > 0:
-            master_timeout = conf.getint('webserver', 'web_server_master_timeout')
-            restart_workers(gunicorn_master_proc, num_workers, master_timeout)
-        else:
-            while gunicorn_master_proc.poll() is None:
-                time.sleep(1)
-
-            sys.exit(gunicorn_master_proc.returncode)
+        # # These run forever until SIG{INT, TERM, KILL, ...} signal is sent
+        # if conf.getint('webserver', 'worker_refresh_interval') > 0:
+        #     # master_timeout = conf.getint('webserver', 'web_server_master_timeout')
+        #     master_timeout = 10000
+        #     restart_workers(gunicorn_master_proc, num_workers, master_timeout)
+        # else:
+        while gunicorn_master_proc.poll() is None:
+            time.sleep(1)
+        log = LoggingMixin().log
+        sys.exit(gunicorn_master_proc.returncode)
 
     def kill_proc(dummy_signum, dummy_frame):
         gunicorn_master_proc.terminate()

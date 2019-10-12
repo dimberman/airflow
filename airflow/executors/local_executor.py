@@ -42,24 +42,16 @@ locally, into just one `LocalExecutor` with multiple modes.
 """
 
 import multiprocessing
-import subprocess
-
-from queue import Empty
 
 from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import State
 import asyncio
 import datetime
-from concurrent.futures import ProcessPoolExecutor
-import requests
 from airflow.utils.dag_processing import SimpleTaskInstance
-from asyncio.futures import Future
-from functools import partial
-from requests import Response
 import aiohttp
 import functools
-import pickle
+
 
 async def make_request_async(task_id, dag_id, execution_date) -> aiohttp.ClientResponse:
     # req = 'http://35.245.62.83/run'
@@ -70,8 +62,8 @@ async def make_request_async(task_id, dag_id, execution_date) -> aiohttp.ClientR
         "dag_id": dag_id,
         "execution_date": date,
     }
-
-    async with aiohttp.ClientSession() as session:
+    timeout = aiohttp.ClientTimeout(total=60000)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url=req, params=params, ) as resp:
             print(resp.status)
             print(await resp.text())
@@ -123,16 +115,23 @@ class LocalExecutorLoop(multiprocessing.Process, LoggingMixin):
                 self.log.info("assuming task success")
                 # self.result_queue.put((key, None))
                 self.pop_running_pipe.send(key)
+                import sys
+
+
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
+            import sys
             self.result_pipe.send((key, state))
+
 
 
 class TaskMessage:
     def __init__(self, key, ti):
         self.key = key
         self.ti = ti
+
+
 class LocalExecutor(BaseExecutor):
     """
     KnativeExecutor executes tasks locally in parallel. It uses the
@@ -168,6 +167,10 @@ class LocalExecutor(BaseExecutor):
     def sync(self):
         while self.result_pipe.poll():
             results = self.result_pipe.recv()
+            (_, state) = results
+            if state == state.FAILED:
+                import sys
+                sys.exit(0)
             self.change_state(*results)
         while self.pop_running_pipe.poll():
             self.set_not_running(self.pop_running_pipe.recv())
