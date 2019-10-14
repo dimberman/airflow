@@ -35,7 +35,6 @@ class BaseExecutor(LoggingMixin):
         """
         Class to derive in order to interface with executor-type systems
         like Celery, Yarn and the likes.
-
         :param parallelism: how many jobs should run at one time. Set to
             ``0`` for infinity
         :type parallelism: int
@@ -95,7 +94,6 @@ class BaseExecutor(LoggingMixin):
     def has_task(self, task_instance):
         """
         Checks if a task is either queued or running in this executor
-
         :param task_instance: TaskInstance
         :return: True if the task is known to this executor
         """
@@ -135,7 +133,6 @@ class BaseExecutor(LoggingMixin):
     def trigger_tasks(self, open_slots):
         """
         Trigger tasks
-
         :param open_slots: Number of open slots
         :return:
         """
@@ -150,12 +147,16 @@ class BaseExecutor(LoggingMixin):
             self.execute_async(key=key,
                                command=command,
                                queue=queue,
-                               executor_config=simple_ti.executor_config)
+                               executor_config=simple_ti.executor_config,
+                               task_instance=simple_ti)
 
     def change_state(self, key, state):
         self.log.debug("Changing state: %s", key)
         self.running.pop(key, None)
         self.event_buffer[key] = state
+
+    def set_not_running(self, key):
+        self.running.pop(key, None)
 
     def fail(self, key):
         self.change_state(key, State.FAILED)
@@ -168,7 +169,6 @@ class BaseExecutor(LoggingMixin):
         Returns and flush the event buffer. In case dag_ids is specified
         it will only return and flush events for the given dag_ids. Otherwise
         it returns and flushes all
-
         :param dag_ids: to dag_ids to return events for, if None returns all
         :return: a dict of events
         """
@@ -188,7 +188,8 @@ class BaseExecutor(LoggingMixin):
                       key,
                       command,
                       queue=None,
-                      executor_config=None):  # pragma: no cover
+                      executor_config=None,
+                      task_instance=None):  # pragma: no cover
         """
         This method will execute the command asynchronously.
         """
