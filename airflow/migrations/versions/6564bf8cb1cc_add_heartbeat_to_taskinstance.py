@@ -27,7 +27,6 @@ Create Date: 2019-10-14 12:31:03.344840
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision = '6564bf8cb1cc'
 down_revision = 'eb30addb1400'
@@ -35,15 +34,16 @@ branch_labels = None
 depends_on = None
 
 
-
 def upgrade():
     """Apply add heartbeat to taskinstance"""
     op.add_column('task_instance',
                   sa.Column('last_heartbeat', sa.DateTime, nullable=True))
-
+    op.create_index('idx_task_heartbeat', 'task_instance', ['task_id', 'last_heartbeat'], unique=False)
 
 
 def downgrade():
     """Unapply add heartbeat to taskinstance"""
+    op.drop_index('idx_task_heartbeat', table_name='task_instance')
+
     op.drop_column('task_instance',
-                  sa.Column('last_heartbeat', sa.DateTime, nullable=True))
+                   sa.Column('last_heartbeat', sa.DateTime, nullable=True))
