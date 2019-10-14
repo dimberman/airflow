@@ -26,7 +26,9 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import State
 from airflow.exceptions import AirflowException
 import asyncio
+from airflow import settings
 import datetime
+from airflow.models import taskinstance
 from airflow.utils.dag_processing import SimpleTaskInstance
 import aiohttp
 import functools
@@ -149,13 +151,18 @@ class KnativeExecutor(BaseExecutor):
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
         self.task_pipe.send((key, task_instance))
 
+    def check_heartbeats(self):
+        session = settings.Session
+
+        stale_tasks = taskinstance.get_stale_running_task_instances(session)
+        for stale_task in stale_tasks:
+            self.result_pipe.send((stale_task.task_id, State.FAILED))
+
     def sync(self):
+        self.check_heartbeats()
         while self.result_pipe.poll():
             results = self.result_pipe.recv()
             (_, state) = results
-            if state == state.FAILED:
-                import sys
-                sys.exit(0)
             self.change_state(*results)
         while self.pop_running_pipe.poll():
             self.set_not_running(self.pop_running_pipe.recv())

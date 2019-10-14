@@ -29,7 +29,7 @@ import time
 from datetime import timedelta
 from typing import Optional
 from urllib.parse import quote
-
+from datetime import datetime
 import dill
 import lazy_object_proxy
 import pendulum
@@ -121,16 +121,20 @@ def clear_task_instances(tis,
             dr.state = State.RUNNING
             dr.start_date = timezone.utcnow()
 
+def get_stale_running_task_instances(session, ):
+    TI = TaskInstance
+    #TODO hardcoding for now
+    stale_time = datetime.now() - timedelta(seconds=30)
+    return session.query(TI).filter(TI.state == State.RUNNING, TI.last_hearbeat < stale_time)
+
 
 class TaskInstance(Base, LoggingMixin):
     """
     Task instances store the state of a task instance. This table is the
     authority and single source of truth around what tasks have run and the
     state they are in.
-
     The SqlAlchemy model doesn't have a SqlAlchemy foreign key to the task or
     dag model deliberately to have more control over transactions.
-
     Database transactions on this table should insure double triggers and
     any confusion around what task instances are or aren't ready to run
     even while multiple schedulers may be firing task instances.
@@ -157,6 +161,7 @@ class TaskInstance(Base, LoggingMixin):
     queued_dttm = Column(UtcDateTime)
     pid = Column(Integer)
     executor_config = Column(PickleType(pickler=dill))
+    last_heartbeat = Column(UtcDateTime)
 
     __table_args__ = (
         Index('ti_dag_state', dag_id, state),
@@ -213,7 +218,6 @@ class TaskInstance(Base, LoggingMixin):
         """
         Return the try number that this task number will be when it is actually
         run.
-
         If the TI is currently running, this will match the column in the
         databse, in all othercases this will be incremenetd
         """
@@ -229,6 +233,7 @@ class TaskInstance(Base, LoggingMixin):
     @property
     def next_try_number(self):
         return self._try_number + 1
+
 
     def command(
             self,
@@ -325,7 +330,6 @@ class TaskInstance(Base, LoggingMixin):
                          ):
         """
         Generates the shell command required to execute this task instance.
-
         :param dag_id: DAG ID
         :type dag_id: unicode
         :param task_id: Task ID
@@ -439,7 +443,6 @@ class TaskInstance(Base, LoggingMixin):
     def refresh_from_db(self, session=None, lock_for_update=False, refresh_executor_config=False):
         """
         Refreshes the task instance from the database based on the primary key
-
         :param refresh_executor_config: if True, revert executor config to
             result from DB. Often, however, we will want to keep the newest
             version
@@ -468,6 +471,7 @@ class TaskInstance(Base, LoggingMixin):
             self.max_tries = ti.max_tries
             self.hostname = ti.hostname
             self.pid = ti.pid
+            self.last_hearbeat = ti.last_heartbeat
             if refresh_executor_config:
                 self.executor_config = ti.executor_config
         else:
@@ -501,6 +505,13 @@ class TaskInstance(Base, LoggingMixin):
         if commit:
             session.commit()
 
+    @provide_session
+    def heartbeat(self, time, session=None, commit=True):
+        self.last_hearbeat = time
+        session.merge(self)
+        if commit:
+            session.commit()
+
     @property
     def is_premature(self):
         """
@@ -515,7 +526,6 @@ class TaskInstance(Base, LoggingMixin):
         """
         Checks whether the dependents of this task instance have all succeeded.
         This is meant to be used by wait_for_downstream.
-
         This is useful when you do not want to start processing the next
         schedule of a task until the dependents are done. For instance,
         if the task DROPs and recreates a table.
@@ -603,7 +613,6 @@ class TaskInstance(Base, LoggingMixin):
         Returns whether or not all the conditions are met for this task instance to be run
         given the context for the dependencies (e.g. a task instance being force run from
         the UI will ignore some dependencies).
-
         :param dep_context: The execution context that determines the dependencies that
             should be evaluated.
         :type dep_context: DepContext
@@ -724,7 +733,6 @@ class TaskInstance(Base, LoggingMixin):
     def get_dagrun(self, session):
         """
         Returns the DagRun for this TaskInstance
-
         :param session:
         :return: DagRun
         """
@@ -753,7 +761,6 @@ class TaskInstance(Base, LoggingMixin):
         Checks dependencies and then sets state to RUNNING if they are met. Returns
         True if and only if state is set to RUNNING, which implies that task should be
         executed, in preparation for _run_raw_task
-
         :param verbose: whether to turn on more verbose logging
         :type verbose: bool
         :param ignore_all_deps: Ignore all of the non-critical dependencies, just runs
@@ -878,7 +885,6 @@ class TaskInstance(Base, LoggingMixin):
         before execution) and then sets the appropriate final state after
         completion and runs any post-execute callbacks. Meant to be called
         only after another function changes the state to running.
-
         :param mark_success: Don't run the task, mark its state as success
         :type mark_success: bool
         :param test_mode: Doesn't record success or failure in the DB
@@ -1309,7 +1315,6 @@ class TaskInstance(Base, LoggingMixin):
             execution_date=None):
         """
         Make an XCom available for tasks to pull.
-
         :param key: A key for the XCom
         :type key: str
         :param value: A value for the XCom. The value is pickled and stored
@@ -1342,16 +1347,13 @@ class TaskInstance(Base, LoggingMixin):
             include_prior_dates=False):
         """
         Pull XComs that optionally meet certain criteria.
-
         The default value for `key` limits the search to XComs
         that were returned by other tasks (as opposed to those that were pushed
         manually). To remove this filter, pass key=None (or any desired value).
-
         If a single task_id string is provided, the result is the value of the
         most recent matching XCom from that task_id. If multiple task_ids are
         provided, a tuple of matching values is returned. None is returned
         whenever no matches are found.
-
         :param key: A key for the XCom. If provided, only XComs with matching
             keys will be returned. The default key is 'return_value', also
             available as a constant XCOM_RETURN_KEY. This key is automatically
