@@ -116,8 +116,8 @@ def clear_task_instances(tis,
 def get_stale_running_task_instances(session, ):
     TI = TaskInstance
     #TODO hardcoding for now
-    stale_time = datetime.now() - timedelta(seconds=30)
-    return session.query(TI).filter(TI.state == State.RUNNING, TI.last_hearbeat < stale_time)
+    stale_time =  pendulum.datetime.utcnow() - timedelta(seconds=30)
+    return session.query(TI).filter(TI.state == State.RUNNING, TI.last_heartbeat < stale_time)
 
 
 class TaskInstance(Base, LoggingMixin):

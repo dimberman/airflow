@@ -58,7 +58,7 @@ async def heartbeat():
     global running_tasks_map, num
     while True:
         num = num + 1
-        for k, v in running_tasks_map:
+        for k, v in running_tasks_map.items():
             a: TaskInstance = v
             await a.heartbeat(time=datetime.now())
         await asyncio.sleep(5)
@@ -70,6 +70,7 @@ async def health(request):
 
 
 async def run_task(request):
+    global running_tasks_map
     dag_id = request.rel_url.query['dag_id']
     task_id = request.rel_url.query['task_id']
     # subdir = request.rel_url.query['subdir']
@@ -91,9 +92,10 @@ async def run_task(request):
                                task_id=task_id,
                                subdir=subdir,
                                execution_date=execution_date)
-        running_tasks_map[key] = ti
         out = run(ti)
+        running_tasks_map[key] = ti
         run_task_instance(ti, log)
+
 
         if out.state == 'success':
             response = web.Response(
@@ -106,7 +108,7 @@ async def run_task(request):
         tb = traceback.format_exc()
         response = web.Response(body="failed {} {}".format(e, tb), status=500)
     finally:
-        running_tasks_map.pop(key)
+        running_tasks_map.pop(key, None)
         return response
 
 

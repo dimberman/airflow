@@ -88,7 +88,7 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
             return
         self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
-            future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date, host)
+            future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date, self.host)
             resp: aiohttp.ClientResponse = await future
             if resp.status != 200:
                 state = State.FAILED
