@@ -35,7 +35,7 @@ import functools
 
 
 async def make_request_async(task_id, dag_id, execution_date, host) -> aiohttp.ClientResponse:
-    req = host + "/run"
+    req = "http://" + host + "/run"
 
     date = int(datetime.datetime.timestamp(execution_date))
     params = {

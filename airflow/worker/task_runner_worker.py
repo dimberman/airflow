@@ -74,7 +74,7 @@ async def run_task(request):
     dag_id = request.rel_url.query['dag_id']
     task_id = request.rel_url.query['task_id']
     # subdir = request.rel_url.query['subdir']
-    subdir = "/Users/dimberman/airflow/dags"
+    subdir = "/root/airflow/dags"
     response = None
     execution_date = pendulum.fromtimestamp(int(request.rel_url.query["execution_date"]))
     log = LoggingMixin().log
