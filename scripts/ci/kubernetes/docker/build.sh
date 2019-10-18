@@ -41,13 +41,14 @@ echo "Airflow directory ${AIRFLOW_SOURCES}"
 echo "Airflow Docker directory ${DIRNAME}"
 
 cd "${AIRFLOW_SOURCES}"
-docker run -ti --rm -v "${AIRFLOW_SOURCES}:/airflow" \
-    -w /airflow "${PYTHON_DOCKER_IMAGE}" ./scripts/ci/kubernetes/docker/compile.sh
+#docker run -ti --rm -v "${AIRFLOW_SOURCES}:/airflow" \
+#    -w /airflow "${PYTHON_DOCKER_IMAGE}" ./scripts/ci/kubernetes/docker/compile.sh
+python setup.py compile_assets sdist -q
 
 pip freeze | grep -v airflow | grep -v mysql> "${DIRNAME}/requirements.txt"
 
-sudo rm -rf "${AIRFLOW_SOURCES}/airflow/www/node_modules"
-sudo rm -rf "${AIRFLOW_SOURCES}/airflow/www_rbac/node_modules"
+#sudo rm -rf "${AIRFLOW_SOURCES}/airflow/www/node_modules"
+#sudo rm -rf "${AIRFLOW_SOURCES}/airflow/www_rbac/node_modules"
 
 echo "Copy distro ${AIRFLOW_SOURCES}/dist/*.tar.gz ${DIRNAME}/airflow.tar.gz"
 cp "${AIRFLOW_SOURCES}"/dist/*.tar.gz "${DIRNAME}/airflow.tar.gz"
