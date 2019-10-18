@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,14 +17,22 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -x
+"""Example of the LatestOnlyOperator"""
 
-cd /usr/local/lib/python3.6/site-packages/airflow && \
-#cp -R example_dags/* /root/airflow/dags/ && \
-#cp -R contrib/example_dags/example_kubernetes_*.py /root/airflow/dags/ && \
-#cp -a contrib/example_dags/libs /root/airflow/dags/ && \
-airflow db init && \
-alembic upgrade heads && \
-alembic history -r current:heads && \
-(airflow users create --username airflow --lastname airflow --firstname jon --email airflow@apache.org --role Admin --password airflow || true) && \
-echo "retrieved from mount" > /root/test_volume/test.txt
+import datetime as dt
+
+import airflow
+from airflow.models import DAG
+from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.latest_only_operator import LatestOnlyOperator
+
+dag = DAG(
+    dag_id='latest_only',
+    schedule_interval=dt.timedelta(hours=4),
+    start_date=airflow.utils.dates.days_ago(2),
+)
+
+latest_only = LatestOnlyOperator(task_id='latest_only', dag=dag)
+task1 = DummyOperator(task_id='task1', dag=dag)
+
+latest_only >> task1

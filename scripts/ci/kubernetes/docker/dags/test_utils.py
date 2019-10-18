@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,15 +16,17 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""Used for unit tests"""
+import airflow
+from airflow.models import DAG
+from airflow.operators.bash_operator import BashOperator
 
-set -x
+dag = DAG(dag_id='test_utils', schedule_interval=None)
 
-cd /usr/local/lib/python3.6/site-packages/airflow && \
-#cp -R example_dags/* /root/airflow/dags/ && \
-#cp -R contrib/example_dags/example_kubernetes_*.py /root/airflow/dags/ && \
-#cp -a contrib/example_dags/libs /root/airflow/dags/ && \
-airflow db init && \
-alembic upgrade heads && \
-alembic history -r current:heads && \
-(airflow users create --username airflow --lastname airflow --firstname jon --email airflow@apache.org --role Admin --password airflow || true) && \
-echo "retrieved from mount" > /root/test_volume/test.txt
+task = BashOperator(
+    task_id='sleeps_forever',
+    dag=dag,
+    bash_command="sleep 10000000000",
+    start_date=airflow.utils.dates.days_ago(2),
+    owner='airflow',
+)

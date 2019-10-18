@@ -49,8 +49,8 @@ spec:
         - name: airflow-configmap
           mountPath: /root/airflow/airflow.cfg
           subPath: airflow.cfg
-        - name: {{INIT_DAGS_VOLUME_NAME}}
-          mountPath: /root/airflow/dags
+#        - name: {{INIT_DAGS_VOLUME_NAME}}
+#          mountPath: /root/airflow/dags
         - name: test-volume
           mountPath: /root/test_volume
         env:

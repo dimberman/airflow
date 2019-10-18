@@ -46,7 +46,7 @@ COPY airflow.tar.gz /tmp/airflow.tar.gz
 RUN pip install --no-use-pep517 /tmp/airflow.tar.gz
 
 COPY airflow-test-env-init.sh /tmp/airflow-test-env-init.sh
-
+COPY dags /root/airflow/dags
 COPY bootstrap.sh /bootstrap.sh
 RUN chmod +x /bootstrap.sh
 

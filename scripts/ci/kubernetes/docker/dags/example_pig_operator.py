@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,14 +17,26 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -x
+"""Example DAG demonstrating the usage of the PigOperator."""
 
-cd /usr/local/lib/python3.6/site-packages/airflow && \
-#cp -R example_dags/* /root/airflow/dags/ && \
-#cp -R contrib/example_dags/example_kubernetes_*.py /root/airflow/dags/ && \
-#cp -a contrib/example_dags/libs /root/airflow/dags/ && \
-airflow db init && \
-alembic upgrade heads && \
-alembic history -r current:heads && \
-(airflow users create --username airflow --lastname airflow --firstname jon --email airflow@apache.org --role Admin --password airflow || true) && \
-echo "retrieved from mount" > /root/test_volume/test.txt
+import airflow
+from airflow.models import DAG
+from airflow.operators.pig_operator import PigOperator
+
+args = {
+    'owner': 'Airflow',
+    'start_date': airflow.utils.dates.days_ago(2),
+}
+
+dag = DAG(
+    dag_id='example_pig_operator',
+    default_args=args,
+    schedule_interval=None,
+)
+
+run_this = PigOperator(
+    task_id="run_example_pig_script",
+    pig="ls /;",
+    pig_opts="-x local",
+    dag=dag,
+)
