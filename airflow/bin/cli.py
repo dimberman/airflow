@@ -1178,7 +1178,7 @@ def airflow_worker(args):
         '-b', str(hostname) + ':' + str(port),
         '-n', 'airflow-worker',
         '-c', 'python:airflow.www.gunicorn_config',
-        'airflow.worker.airflow_worker:create_app'
+        'airflow.worker.task_runner_worker:create_app'
     ]
 
     def monitor_gunicorn(gunicorn_master_proc):
@@ -2242,11 +2242,6 @@ class CLIFactory:
                     'args': ('dag_id', 'subdir'),
                 },
                 {
-                    'func': airflow_worker,
-                    'help': 'starts a knative worker',
-                    'args': ('port', 'workers', 'worker_timeout', 'hostname'),
-                },
-                {
                     'func': unpause,
                     'name': 'unpause',
                     'help': 'Resume a paused DAG',
@@ -2481,6 +2476,12 @@ class CLIFactory:
                      'do_pickle', 'pid', 'daemon', 'stdout', 'stderr',
                      'log_file'),
         }, {
+                'func': airflow_worker,
+                'name': 'airflow_worker',
+                'help': 'starts a knative worker',
+                'args': ('port', 'workers', 'worker_timeout', 'hostname'),
+            },
+        {
             'func': worker,
             'help': "Start a Celery worker node",
             'args': ('do_pickle', 'queues', 'concurrency', 'celery_hostname',
