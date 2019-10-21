@@ -34,7 +34,7 @@ import aiohttp
 import functools
 
 
-async def make_request_async(task_id, dag_id, execution_date, host) -> aiohttp.ClientResponse:
+async def make_request_async(task_id, dag_id, execution_date, host, host_header=None) -> aiohttp.ClientResponse:
     req = "http://" + host + "/run"
 
     date = int(datetime.datetime.timestamp(execution_date))
@@ -43,9 +43,12 @@ async def make_request_async(task_id, dag_id, execution_date, host) -> aiohttp.C
         "dag_id": dag_id,
         "execution_date": date,
     }
+    headers = {}
+    if host_header:
+        headers["Host"] = host_header
     timeout = aiohttp.ClientTimeout(total=60000)
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        async with session.get(url=req, params=params, ) as resp:
+        async with session.get(url=req, params=params, headers=headers) as resp:
             print(resp.status)
             print(await resp.text())
             return resp
@@ -56,6 +59,7 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
                  task_pipe: multiprocessing.Pipe,
                  result_pipe: multiprocessing.Pipe,
                  pop_running_pipe: multiprocessing.Pipe,
+                 host_header,
                  host,
                  ):
 
@@ -63,6 +67,7 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
         self.host = host
         self.task_pipe = task_pipe
         self.result_pipe = result_pipe
+        self.host_header = host_header
         self.pop_running_pipe = pop_running_pipe
 
     def recieve_and_execute(self, loop):
@@ -88,7 +93,8 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
             return
         self.log.info("%s running %s", self.__class__.__name__, task_instance)
         try:
-            future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date, self.host)
+            future = make_request_async(task_instance.task_id, task_instance.dag_id, task_instance.execution_date,
+                                        self.host, host_header=self.host_header)
             resp: aiohttp.ClientResponse = await future
             if resp.status != 200:
                 state = State.FAILED
@@ -133,6 +139,7 @@ class KnativeExecutor(BaseExecutor):
 
     def start(self):
         req = conf.get("knative", "knative_host")
+        host_header = conf.get("knative", "knative_host_header")
         if req is None:
             raise AirflowException("you must set a knative host")
 
@@ -144,6 +151,7 @@ class KnativeExecutor(BaseExecutor):
             task_pipe=child_task_pipe,
             result_pipe=child_result_pipe,
             host=req,
+            host_header=host_header,
             pop_running_pipe=child_pop_running_pipe
         )
         self.local_loop.start()
