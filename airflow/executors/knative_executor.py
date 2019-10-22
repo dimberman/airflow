@@ -20,6 +20,7 @@
 
 import multiprocessing
 
+from cached_property import cached_property
 from airflow.executors.base_executor import BaseExecutor
 from airflow.configuration import conf
 from airflow.utils.log.logging_mixin import LoggingMixin
@@ -135,22 +136,14 @@ class KnativeExecutor(BaseExecutor):
     def terminate(self):
         pass
 
-    @property
+    @cached_property
     def kube_executor(self):
-        if self._kube_executor is None:
-            self._kube_executor = KubernetesExecutor()
-            return self._kube_executor
-        else:
-            return self._kube_executor
-
-    @kube_executor.setter
-    def kube_executor(self, value):
-        self._kube_executor = value
+        self.kube_executor_initialized = True
+        return KubernetesExecutor()
 
     def __init__(self):
+        self.kube_executor_initialized = False
         super().__init__()
-        self._kube_executor = None
-
 
     def start(self):
         req = conf.get("knative", "knative_host")
@@ -192,7 +185,8 @@ class KnativeExecutor(BaseExecutor):
             self.change_state(*results)
         while self.pop_running_pipe.poll():
             self.set_not_running(self.pop_running_pipe.recv())
-        self.kube_executor.sync()
+        if self.kube_executor_initialized:
+            self.kube_executor.sync()
 
     def end(self):
         self.sync()
