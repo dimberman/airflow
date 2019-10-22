@@ -60,8 +60,8 @@ async def heartbeat():
         num = num + 1
         for k, v in running_tasks_map.items():
             a: TaskInstance = v
-            await a.heartbeat(time=datetime.now())
-        await asyncio.sleep(5)
+            await a.heartbeat()
+        await asyncio.sleep(1)
 
 
 async def health(request):
@@ -78,7 +78,6 @@ async def run_task(request):
     response = None
     execution_date = pendulum.fromtimestamp(int(request.rel_url.query["execution_date"]))
     log = LoggingMixin().log
-    #
     log.info("running dag {} for task {} on date {} in subdir {}".format(dag_id, task_id, execution_date, subdir))
     logging.shutdown()
     key = (task_id, dag_id, execution_date).__str__()

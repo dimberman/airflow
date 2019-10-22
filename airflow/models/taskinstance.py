@@ -113,11 +113,11 @@ def clear_task_instances(tis,
             dr.state = State.RUNNING
             dr.start_date = timezone.utcnow()
 
-def get_stale_running_task_instances(session, ):
+def get_stale_running_task_instances(session, stale_tolerance=30):
     TI = TaskInstance
     #TODO hardcoding for now
-    stale_time =  pendulum.datetime.utcnow() - timedelta(seconds=30)
-    return session.query(TI).filter(TI.state == State.RUNNING, TI.last_heartbeat < stale_time)
+    stale_time =  pendulum.datetime.utcnow() - timedelta(seconds=stale_tolerance)
+    return session.query(TI).filter(TI.state == State.RUNNING, TI.last_heartbeat < stale_time).all()
 
 
 class TaskInstance(Base, LoggingMixin):
@@ -152,8 +152,8 @@ class TaskInstance(Base, LoggingMixin):
     operator = Column(String(1000))
     queued_dttm = Column(UtcDateTime)
     pid = Column(Integer)
-    executor_config = Column(PickleType(pickler=dill))
     last_heartbeat = Column(UtcDateTime)
+    executor_config = Column(PickleType(pickler=dill))
 
     __table_args__ = (
         Index('ti_dag_state', dag_id, state),
@@ -463,7 +463,7 @@ class TaskInstance(Base, LoggingMixin):
             self.max_tries = ti.max_tries
             self.hostname = ti.hostname
             self.pid = ti.pid
-            self.last_hearbeat = ti.last_heartbeat
+            self.last_heartbeat = ti.last_heartbeat
             if refresh_executor_config:
                 self.executor_config = ti.executor_config
         else:
@@ -498,8 +498,8 @@ class TaskInstance(Base, LoggingMixin):
             session.commit()
 
     @provide_session
-    def heartbeat(self, time, session=None, commit=True):
-        self.last_hearbeat = time
+    def heartbeat(self, time=timezone.utcnow(), session=None, commit=True):
+        self.last_heartbeat = time
         session.merge(self)
         if commit:
             session.commit()
