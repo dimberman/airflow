@@ -32,6 +32,7 @@ from airflow.models import taskinstance
 from airflow.utils.dag_processing import SimpleTaskInstance
 import aiohttp
 import functools
+from airflow.executors.kubernetes_executor import KubernetesExecutor
 
 
 async def make_request_async(task_id, dag_id, execution_date, host, host_header=None) -> aiohttp.ClientResponse:
@@ -134,8 +135,22 @@ class KnativeExecutor(BaseExecutor):
     def terminate(self):
         pass
 
+    @property
+    def kube_executor(self):
+        if self._kube_executor is None:
+            self._kube_executor = KubernetesExecutor()
+            return self._kube_executor
+        else:
+            return self._kube_executor
+
+    @kube_executor.setter
+    def kube_executor(self, value):
+        self._kube_executor = value
+
     def __init__(self):
         super().__init__()
+        self._kube_executor = None
+
 
     def start(self):
         req = conf.get("knative", "knative_host")
@@ -157,7 +172,10 @@ class KnativeExecutor(BaseExecutor):
         self.local_loop.start()
 
     def execute_async(self, key, command, queue=None, executor_config=None, task_instance=None):
-        self.task_pipe.send((key, task_instance))
+        if queue == "kubernetes":
+            self.kube_executor.execute_async(key, command, queue, executor_config)
+        else:
+            self.task_pipe.send((key, task_instance))
 
     def check_heartbeats(self):
         session = settings.Session
@@ -174,6 +192,7 @@ class KnativeExecutor(BaseExecutor):
             self.change_state(*results)
         while self.pop_running_pipe.poll():
             self.set_not_running(self.pop_running_pipe.recv())
+        self.kube_executor.sync()
 
     def end(self):
         self.sync()
