@@ -122,6 +122,12 @@ def clear_task_instances(tis,
             dr.start_date = timezone.utcnow()
 
 
+def get_stale_running_task_instances(session, stale_tolerance=30):
+    TI = TaskInstance
+    stale_time = pendulum.datetime.utcnow() - timedelta(seconds=stale_tolerance)
+    return session.query(TI).filter(TI.state == State.RUNNING, TI.last_heartbeat < stale_time).all()
+
+
 class TaskInstance(Base, LoggingMixin):
     """
     Task instances store the state of a task instance. This table is the
@@ -154,6 +160,7 @@ class TaskInstance(Base, LoggingMixin):
     queue = Column(String(256))
     priority_weight = Column(Integer)
     operator = Column(String(1000))
+    last_heartbeat = Column(UtcDateTime)
     queued_dttm = Column(UtcDateTime)
     pid = Column(Integer)
     executor_config = Column(PickleType(pickler=dill))
@@ -393,6 +400,13 @@ class TaskInstance(Base, LoggingMixin):
             "&dag_id={dag_id}"
         ).format(iso=iso, task_id=self.task_id, dag_id=self.dag_id)
 
+    @provide_session
+    def heartbeat(self, time=timezone.utcnow(), session=None, commit=True):
+        self.last_heartbeat = time
+        session.merge(self)
+        if commit:
+            session.commit()
+
     @property
     def mark_success_url(self):
         iso = quote(self.execution_date.isoformat())
@@ -467,6 +481,7 @@ class TaskInstance(Base, LoggingMixin):
             self.try_number = ti._try_number
             self.max_tries = ti.max_tries
             self.hostname = ti.hostname
+            self.last_heartbeat = ti.last_heartbeat
             self.pid = ti.pid
             if refresh_executor_config:
                 self.executor_config = ti.executor_config

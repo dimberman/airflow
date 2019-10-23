@@ -99,6 +99,7 @@ class LocalTaskJob(BaseJob):
                     self.log.info("Task exited with return code %s", return_code)
                     return
 
+                self.task_instance.heartbeat()
                 self.heartbeat()
 
                 # If it's been too long since we've heartbeat, then it's possible that
