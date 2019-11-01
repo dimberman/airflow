@@ -39,7 +39,7 @@ from airflow.utils.state import State
 
 class KnativeTaskJob(BaseJob):
     __mapper_args__ = {
-        'polymorphic_identity': 'LocalTaskJob'
+        'polymorphic_identity': 'KnativeTaskJob'
     }
 
     def __init__(
