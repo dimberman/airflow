@@ -150,7 +150,7 @@ class BaseTaskRunner(LoggingMixin):
         """
         raise NotImplementedError()
 
-    def return_code(self):
+    def return_code(self, timeout=0.0):
         """
         :return: The return code associated with running the task instance or
             None if the task is not yet done.

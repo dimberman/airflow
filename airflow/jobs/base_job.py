@@ -163,35 +163,35 @@ class BaseJob(Base, LoggingMixin):
         sleep at all.
         """
         try:
+            # See if someone has externally set our state to
             with create_session() as session:
-                job = session.query(BaseJob).filter_by(id=self.id).one()
-                make_transient(job)
-                session.commit()
+                self.log.debug("merge(self)")
+                session.merge(self)
 
-            if job.state == State.SHUTDOWN:
+            if self.state == State.SHUTDOWN:
                 self.kill()
 
             is_unit_test = conf.getboolean('core', 'unit_test_mode')
             if not is_unit_test:
                 # Figure out how long to sleep for
                 sleep_for = 0
-                if job.latest_heartbeat:
+                if self.latest_heartbeat:
                     seconds_remaining = self.heartrate - \
-                        (timezone.utcnow() - job.latest_heartbeat)\
+                        (timezone.utcnow() - self.latest_heartbeat)\
                         .total_seconds()
                     sleep_for = max(0, seconds_remaining)
 
+                self.log.debug("Sleeping for %f seconds", sleep_for)
                 sleep(sleep_for)
 
             # Update last heartbeat time
             with create_session() as session:
-                job = session.query(BaseJob).filter(BaseJob.id == self.id).first()
-                job.latest_heartbeat = timezone.utcnow()
-                session.merge(job)
+                session.merge(self)
+                self.log.debug('[heartbeat]')
+                self.latest_heartbeat = timezone.utcnow()
                 session.commit()
 
                 self.heartbeat_callback(session=session)
-                self.log.debug('[heartbeat]')
         except OperationalError:
             Stats.incr(
                 convert_camel_to_snake(self.__class__.__name__) + '_heartbeat_failure', 1,

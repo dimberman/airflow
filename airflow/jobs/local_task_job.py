@@ -30,6 +30,7 @@ from airflow.utils.db import provide_session
 from airflow.utils.net import get_hostname
 from airflow.jobs.base_job import BaseJob
 from airflow.utils.state import State
+from airflow.utils import timezone
 
 
 class LocalTaskJob(BaseJob):
@@ -63,9 +64,11 @@ class LocalTaskJob(BaseJob):
         # terminate multiple times
         self.terminating = False
 
-        super().__init__(*args, **kwargs)
+        heartrate = conf.getint('scheduler', 'scheduler_zombie_task_threshold')
+        super().__init__(heartrate=heartrate, *args, **kwargs)
 
     def _execute(self):
+        self.log.debug("LocalTaskJob._execute")
         self.task_runner = get_task_runner(self)
 
         def signal_handler(signum, frame):
@@ -89,37 +92,20 @@ class LocalTaskJob(BaseJob):
         try:
             self.task_runner.start()
 
-            heartbeat_time_limit = conf.getint('scheduler',
-                                               'scheduler_zombie_task_threshold')
             while True:
+
+                limit = max(self.heartrate - (timezone.utcnow() - self.latest_heartbeat).total_seconds(), 0)
                 # Monitor the task to see if it's done
-                return_code = self.task_runner.return_code()
+                return_code = self.task_runner.return_code(timeout=0)
                 if return_code is not None:
                     self.log.info("Task exited with return code %s", return_code)
                     return
+                self.log.debug("Task return code %r", return_code)
 
                 # Periodically heartbeat so that the scheduler doesn't think this
                 # is a zombie
-                last_heartbeat_time = time.time()
                 self.heartbeat()
 
-                # If it's been too long since we've heartbeat, then it's possible that
-                # the scheduler rescheduled this task, so kill launched processes.
-                time_since_last_heartbeat = time.time() - last_heartbeat_time
-                if time_since_last_heartbeat > heartbeat_time_limit:
-                    Stats.incr('local_task_job_prolonged_heartbeat_failure', 1, 1)
-                    self.log.error("Heartbeat time limited exceeded!")
-                    raise AirflowException("Time since last heartbeat({:.2f}s) "
-                                           "exceeded limit ({}s)."
-                                           .format(time_since_last_heartbeat,
-                                                   heartbeat_time_limit))
-
-                if time_since_last_heartbeat < self.heartrate:
-                    sleep_for = self.heartrate - time_since_last_heartbeat
-                    self.log.warning("Time since last heartbeat(%.2f s) < heartrate(%s s)"
-                                     ", sleeping for %s s", time_since_last_heartbeat,
-                                     self.heartrate, sleep_for)
-                    time.sleep(sleep_for)
         finally:
             self.on_kill()
 
@@ -139,11 +125,11 @@ class LocalTaskJob(BaseJob):
         self.task_instance.refresh_from_db()
         ti = self.task_instance
 
-        fqdn = get_hostname()
-        same_hostname = fqdn == ti.hostname
-        same_process = ti.pid == os.getpid()
-
         if ti.state == State.RUNNING:
+            fqdn = get_hostname()
+            same_hostname = fqdn == ti.hostname
+            same_process = ti.pid == os.getpid()
+
             if not same_hostname:
                 self.log.warning("The recorded hostname %s "
                                  "does not match this instance's hostname "

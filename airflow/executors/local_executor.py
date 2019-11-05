@@ -45,9 +45,13 @@ locally, into just one `LocalExecutor` with multiple modes.
 """
 
 import multiprocessing
+import os
 import subprocess
 
 from queue import Empty
+
+import psutil
+from setproctitle import setproctitle
 
 from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.log.logging_mixin import LoggingMixin
@@ -81,12 +85,21 @@ class LocalWorker(multiprocessing.Process, LoggingMixin):
         if key is None:
             return
         self.log.info("%s running %s", self.__class__.__name__, command)
-        try:
-            subprocess.check_call(command, close_fds=True)
-            state = State.SUCCESS
-        except subprocess.CalledProcessError as e:
-            state = State.FAILED
-            self.log.error("Failed to execute task %s.", str(e))
+
+        pid = os.fork()
+        if pid:
+            process = psutil.Process(pid)
+            self.log.info("Started process %d to watch task", pid)
+            returncode = process.wait()
+            state = State.FAILED if returncode else State.SUCCESS
+        else:
+            from airflow.bin.cli import CLIFactory
+            parser = CLIFactory.get_parser()
+            args = parser.parse_args(command[1:])
+            setproctitle("airflow task watcher {0.dag_id} {0.task_id} {0.execution_date}".format(args))
+            args.func(args)
+            os._exit(0)
+
         self.result_queue.put((key, state))
 
     def run(self):
