@@ -38,7 +38,6 @@ from airflow.utils.state import State
 
 
 class KnativeTaskJob(BaseJob):
-
     __mapper_args__ = {
         'polymorphic_identity': 'LocalTaskJob'
     }
@@ -78,6 +77,7 @@ class KnativeTaskJob(BaseJob):
             self.log.error("Received SIGTERM. Terminating subprocesses")
             self.on_kill()
             raise AirflowException("LocalTaskJob received SIGTERM signal")
+
         signal.signal(signal.SIGTERM, signal_handler)
 
         if not self.task_instance._check_and_change_state_before_execution(
@@ -131,6 +131,26 @@ class KnativeTaskJob(BaseJob):
         self.task_runner.on_finish()
 
     @provide_session
+    def run_remote_heartbeat(self):
+        while True:
+            self.task_instance.refresh_from_db()
+            ti = self.task_instance
+
+            if ti.state == State.RUNNING:
+                self.heartbeat()
+            elif (
+                self.task_runner.return_code() is None and
+                hasattr(self.task_runner, 'process')
+            ):
+                self.log.warning(
+                    "State of this instance has been externally set to %s. "
+                    "Taking the poison pill.",
+                    ti.state
+                )
+                self.task_runner.terminate()
+                self.terminating = True
+
+    @provide_session
     def heartbeat_callback(self, session=None):
         """Self destruct task if state has been moved away from running externally"""
 
@@ -158,8 +178,8 @@ class KnativeTaskJob(BaseJob):
                                  "the current pid %s", ti.pid, current_pid)
                 raise AirflowException("PID of job runner does not match")
         elif (
-                self.task_runner.return_code() is None and
-                hasattr(self.task_runner, 'process')
+            self.task_runner.return_code() is None and
+            hasattr(self.task_runner, 'process')
         ):
             self.log.warning(
                 "State of this instance has been externally set to %s. "
