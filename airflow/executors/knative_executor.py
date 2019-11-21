@@ -38,7 +38,8 @@ async def make_request_async(
     dag_id,
     execution_date,
     host,
-    host_header=None
+    log,
+    host_header=None,
 ) -> aiohttp.ClientResponse:
     req = "http://" + host + "/run"
 
@@ -54,8 +55,8 @@ async def make_request_async(
     timeout = aiohttp.ClientTimeout(total=60000)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url=req, params=params, headers=headers) as resp:
-            print(resp.status)
-            print(await resp.text())
+            log.info(resp.status)
+            log.info(await resp.text())
             return resp
 
 
@@ -102,7 +103,7 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
                 task_id,
                 dag_id,
                 execution_date,
-                host=self.host, host_header=self.host_header)
+                host=self.host, log=self.log, host_header=self.host_header)
             resp = await future
             if resp.status != 200:
                 state = State.FAILED
