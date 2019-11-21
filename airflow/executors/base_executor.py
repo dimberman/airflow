@@ -104,6 +104,9 @@ class BaseExecutor(LoggingMixin):
         if task_instance.key in self.queued_tasks or task_instance.key in self.running:
             return True
 
+    def set_not_running(self, key):
+        self.running.pop(key)
+
     def sync(self):
         """
         Sync will get called periodically by the heartbeat method.
