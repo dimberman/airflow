@@ -205,6 +205,7 @@ exclude_patterns = [
     '_api/airflow/version',
     '_api/airflow/www',
     '_api/airflow/www_rbac',
+    '_api/airflow/worker',
     '_api/main',
     'autoapi_templates',
     'howto/operator/gcp/_partials',
