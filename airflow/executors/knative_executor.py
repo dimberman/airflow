@@ -145,7 +145,14 @@ class KnativeExecutor(BaseExecutor):
 
     def start(self):
         req = conf.get("knative", "knative_host")
+<<<<<<< HEAD
         host_header = None
+=======
+        try:
+            host_header = conf.get("knative", "knative_host_header")
+        except Exception as e:
+            host_header = None
+>>>>>>> 3f4f51a86... host header doesn't break
         if req is None:
             raise AirflowException("you must set a knative host")
 
