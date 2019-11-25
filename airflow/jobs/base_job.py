@@ -235,9 +235,6 @@ class BaseJob(Base, LoggingMixin):
 
         Stats.incr(self.__class__.__name__.lower() + '_end', 1, 1)
 
-    def run_remote_heartbeat(self):
-        raise NotImplementedError("This method needs to be overridden")
-
     def _execute(self):
         raise NotImplementedError("This method needs to be overridden")
 

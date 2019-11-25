@@ -75,6 +75,11 @@ class LocalExecutorTest(unittest.TestCase):
                  mock.call('executor.running_tasks', mock.ANY)]
         mock_stats_gauge.assert_has_calls(calls)
 
+    def test_knative_executor(self):
+        from airflow.jobs import SchedulerJob
+        s = SchedulerJob()
+        s.run()
+
 
 if __name__ == '__main__':
     unittest.main()

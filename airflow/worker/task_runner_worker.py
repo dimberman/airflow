@@ -71,6 +71,7 @@ def run_task():
                                task_id=task_id,
                                subdir=subdir,
                                execution_date=execution_date)
+        ti.refresh_from_db()
         local_job = LocalTaskJob(
             task_instance=ti,
         )

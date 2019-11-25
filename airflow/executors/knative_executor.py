@@ -111,9 +111,7 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
                 self.result_pipe.send((key, state))
             else:
                 self.log.info("assuming task success")
-                # self.result_queue.put((key, None))
-                self.pop_running_pipe.send(key)
-
+                self.result_pipe.send((key, None))
         except asyncio.InvalidStateError as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
@@ -145,7 +143,7 @@ class KnativeExecutor(BaseExecutor):
 
     def start(self):
         req = conf.get("knative", "knative_host")
-        host_header = None
+        host_header = conf.get("knative", "knative_host_header")
         if req is None:
             raise AirflowException("you must set a knative host")
 
