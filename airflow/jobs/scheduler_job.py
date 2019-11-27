@@ -922,10 +922,10 @@ class SchedulerJob(BaseJob):
         # Put one task instance on each line
         task_instance_str = "\n\t".join(
             [repr(x) for x in task_instances_to_examine])
-        self.log.info(
-            "%s tasks up for execution:\n\t%s", len(task_instances_to_examine),
-            task_instance_str
-        )
+        # self.log.info(
+        #     "%s tasks up for execution:\n\t%s", len(task_instances_to_examine),
+        #     task_instance_str
+        # )
         for ti_str in task_instances_to_examine:
             self.log.info("xxx {} is up for execution".format(repr(ti_str)))
 

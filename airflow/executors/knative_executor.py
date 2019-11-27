@@ -112,7 +112,7 @@ class KnativeRequestLoop(multiprocessing.Process, LoggingMixin):
             else:
                 self.log.info("assuming task success")
                 self.result_pipe.send((key, None))
-        except asyncio.InvalidStateError as e:
+        except Exception as e:
             state = State.FAILED
             self.log.error("Failed to execute task %s.", str(e))
             self.result_pipe.send((key, state))
