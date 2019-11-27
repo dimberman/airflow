@@ -926,6 +926,8 @@ class SchedulerJob(BaseJob):
             "%s tasks up for execution:\n\t%s", len(task_instances_to_examine),
             task_instance_str
         )
+        for ti_str in task_instances_to_examine:
+            self.log.info("xxx {} is up for execution".format(repr(ti_str)))
 
         # Get the pool settings
         pools = {p.pool: p for p in session.query(models.Pool).all()}
@@ -1032,8 +1034,10 @@ class SchedulerJob(BaseJob):
 
         task_instance_str = "\n\t".join(
             [repr(x) for x in executable_tis])
-        self.log.info(
-            "Setting the following tasks to queued state:\n\t%s", task_instance_str)
+        # self.log.info(
+        #     "Setting the following tasks to queued state:\n\t%s", task_instance_str)
+        for ti_str in executable_tis:
+            self.log.info("xxx {} is executable and should be set to queued".format(repr(ti_str)))
         # so these dont expire on commit
         for ti in executable_tis:
             copy_dag_id = ti.dag_id
@@ -1108,8 +1112,10 @@ class SchedulerJob(BaseJob):
             [repr(x) for x in tis_to_set_to_queued])
 
         session.commit()
-        self.log.info("xxx Setting the following %s tasks to queued state:\n\t%s",
-                      len(tis_to_set_to_queued), task_instance_str)
+        # self.log.info("xxx Setting the following %s tasks to queued state:\n\t%s",
+        #               len(tis_to_set_to_queued), task_instance_str)
+        for ti_str in tis_to_set_to_queued:
+            self.log.info("xxx Set {} to queued".format(repr(ti_str)))
         return simple_task_instances
 
     def _enqueue_task_instances_with_queued_state(self, simple_dag_bag,
