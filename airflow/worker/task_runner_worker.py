@@ -74,7 +74,6 @@ def run_task():
         ti.refresh_from_db()
         local_job = LocalTaskJob(
             task_instance=ti,
-            ignore_ti_state=True,
         )
         local_job.run()
         return "task passed or failed successfully", 200
