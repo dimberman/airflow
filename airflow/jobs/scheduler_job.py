@@ -1108,7 +1108,7 @@ class SchedulerJob(BaseJob):
             [repr(x) for x in tis_to_set_to_queued])
 
         session.commit()
-        self.log.info("Setting the following %s tasks to queued state:\n\t%s",
+        self.log.info("xxx Setting the following %s tasks to queued state:\n\t%s",
                       len(tis_to_set_to_queued), task_instance_str)
         return simple_task_instances
 

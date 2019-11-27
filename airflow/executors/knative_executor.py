@@ -167,6 +167,8 @@ class KnativeExecutor(BaseExecutor):
         if queue == "kubernetes":
             self.kube_executor.execute_async(key, command, queue, executor_config)
         else:
+            self.log.info("xxx Sending the folllowing task to knative: {}".format(key))
+
             self.task_pipe.send(key)
 
     def check_heartbeats(self):
