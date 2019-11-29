@@ -56,10 +56,10 @@ class BaseExecutor(LoggingMixin):
     def queue_command(self, simple_task_instance, command, priority=1, queue=None):
         key = simple_task_instance.key
         if key not in self.queued_tasks and key not in self.running:
-            self.log.info("Adding to queue: %s", command)
+            self.log.info("xxx Adding to queue: %s", command)
             self.queued_tasks[key] = (command, priority, queue, simple_task_instance)
         else:
-            self.log.info("could not queue task %s", key)
+            self.log.info("xxx could not queue task %s", key)
 
     def queue_task_instance(
             self,
@@ -135,6 +135,7 @@ class BaseExecutor(LoggingMixin):
         self.trigger_tasks(open_slots)
 
         # Calling child class sync method
+        self.log.info("xxx queued tasks: {}".format(self.queued_tasks))
         self.log.debug("Calling the %s sync method", self.__class__)
         self.sync()
 
