@@ -1234,6 +1234,8 @@ class SchedulerJob(BaseJob):
             task_instance_str = "\n\t".join(
                 [repr(x) for x in tis_to_set_to_scheduled])
 
+            for ti in tis_to_set_to_scheduled:
+                self.log.info("xxx set {} to SCHEDULED".format(repr(ti)))
             session.commit()
             self.log.info("Set the following tasks to scheduled state:\n\t%s", task_instance_str)
 
