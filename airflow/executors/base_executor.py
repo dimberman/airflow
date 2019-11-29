@@ -154,6 +154,8 @@ class BaseExecutor(LoggingMixin):
             reverse=True)
         for i in range(min((open_slots, len(self.queued_tasks)))):
             key, (command, _, queue, simple_ti) = sorted_queue.pop(0)
+            (_, _, t, _) = key
+            self.log.info("xxx popping key {} at time {}".format(key, t.isoformat()))
             self.queued_tasks.pop(key)
             self.running[key] = command
             self.execute_async(key=key,
