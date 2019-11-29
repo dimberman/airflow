@@ -135,7 +135,7 @@ class BaseExecutor(LoggingMixin):
         self.trigger_tasks(open_slots)
 
         # Calling child class sync method
-        for task in queued_tasks:
+        for task in self.queued_tasks:
             self.log.info("xxx queued task: {}".format(task))
         self.log.debug("Calling the %s sync method", self.__class__)
         self.sync()
