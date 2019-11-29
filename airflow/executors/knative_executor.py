@@ -168,7 +168,7 @@ class KnativeExecutor(BaseExecutor):
             self.kube_executor.execute_async(key, command, queue, executor_config)
         else:
             _, _, t, _ = key
-            self.log.info("xxx Sending the folllowing task to knative: {} at time {}".format(key, t.isofmar))
+            self.log.info("xxx Sending the folllowing task to knative: {} at time {}".format(key, t.isoformat()))
 
             self.task_pipe.send(key)
 
