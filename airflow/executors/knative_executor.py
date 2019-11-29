@@ -179,10 +179,10 @@ class KnativeExecutor(BaseExecutor):
         self.check_heartbeats()
         while self.result_pipe.poll():
             results = self.result_pipe.recv()
-            (_, state) = results
+            (key, state) = results
+            (_, _, t, _) = key
+            self.log.info("xxx setting {} to {} at {}".format(key, state, t.isoformat()))
             self.change_state(*results)
-        while self.pop_running_pipe.poll():
-            self.set_not_running(self.pop_running_pipe.recv())
         if self.kube_executor_initialized:
             self.kube_executor.sync()
 
