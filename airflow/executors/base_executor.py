@@ -136,7 +136,8 @@ class BaseExecutor(LoggingMixin):
 
         # Calling child class sync method
         for task in self.queued_tasks:
-            self.log.info("xxx queued task: {}".format(task))
+            _,_,t,_ = task
+            self.log.info("xxx queued task: {} at {}".format(task, t.isoformat()))
         self.log.debug("Calling the %s sync method", self.__class__)
         self.sync()
 
