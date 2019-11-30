@@ -1150,8 +1150,8 @@ class SchedulerJob(BaseJob):
             priority = simple_task_instance.priority_weight
             queue = simple_task_instance.queue
             self.log.info(
-                "xxx ending %s to executor with priority %s and queue %s",
-                simple_task_instance.key, priority, queue
+                "xxx sending %s to executor with priority %s and queue %s at time %s",
+                simple_task_instance.key, priority, queue, simple_task_instance.execution_date.isoformat()
             )
 
             self.executor.queue_command(
