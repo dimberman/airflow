@@ -137,7 +137,7 @@ class BaseExecutor(LoggingMixin):
         # Calling child class sync method
         for task in self.queued_tasks:
             _,_,t,_ = task
-            self.log.info("xxx queued task: {} at {}".format(task, t.isoformat()))
+            self.log.info("xxx task {} is still in queued_task and was not triggered at {}".format(task, t.isoformat()))
         self.log.debug("Calling the %s sync method", self.__class__)
         self.sync()
 
@@ -155,7 +155,7 @@ class BaseExecutor(LoggingMixin):
         for i in range(min((open_slots, len(self.queued_tasks)))):
             key, (command, _, queue, simple_ti) = sorted_queue.pop(0)
             (_, _, t, _) = key
-            self.log.info("xxx popping key {} at time {}".format(key, t.isoformat()))
+            self.log.info("xxx triggering task {} and popping from queued_tasks at time {}".format(key, t.isoformat()))
             self.queued_tasks.pop(key)
             self.running[key] = command
             self.execute_async(key=key,
