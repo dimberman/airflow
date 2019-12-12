@@ -879,7 +879,7 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
                     self.result_queue.task_done()
             except Empty:
                 break
-
+        tasks_run = 0
         KubeResourceVersion.checkpoint_resource_version(last_resource_version)
         self.log.info("xxx starting tasks")
         for _ in range(self.kube_config.worker_pods_creation_batch_size):
@@ -887,6 +887,7 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
             try:
                 for i in range(10):
                     task = self.task_queue.get_nowait()
+                    tasks_run += 1
                     tasks.append(task)
             except Empty:
                 self.log.info("xxx task queue empty, running fewer tasks")
@@ -906,7 +907,8 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
                 for task in tasks:
                     self.task_queue.put(task)
             finally:
-                self.task_queue.task_done()
+                for i in range(0, tasks_run):
+                    self.task_queue.task_done()
 
     def _change_state(self, key, state, pod_id):
         if state != State.RUNNING:
