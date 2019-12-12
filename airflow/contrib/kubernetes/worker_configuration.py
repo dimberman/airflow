@@ -377,7 +377,7 @@ class WorkerConfiguration(LoggingMixin):
             # we want to run each task in parallel
             full_command.extend("&")
         # remove unneeded &
-        command = full_command.append("sleep 15")
+        command = full_command.append("wait")
 
         return Pod(
             namespace=namespace,
