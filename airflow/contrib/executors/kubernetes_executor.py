@@ -487,6 +487,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
         key, command, kube_executor_config = jobs[0]
         dag_id, task_id, execution_date, try_number = key
         pod_id = self._create_pod_id(dag_id, task_id)
+        self.log.info("xxx adding {} to queue_map".format(pod_id))
         self.queue_map[pod_id] = jobs
         pod = self.worker_configuration.make_queue_pod(
             namespace=self.namespace, worker_uuid=self.worker_uuid,
@@ -558,6 +559,8 @@ class AirflowKubernetesScheduler(LoggingMixin):
 
     def process_watcher_group(self, task):
         pod_id, state, labels, resource_version = task
+        self.log.info("xxx current queue_map {}".format(self.queue_map.keys()))
+        self.log.info("popping {}".format(pod_id))
         jobs = self.queue_map.pop(pod_id)
         for job in jobs:
             key, _, _ = job
