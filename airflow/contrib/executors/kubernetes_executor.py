@@ -485,12 +485,15 @@ class AirflowKubernetesScheduler(LoggingMixin):
         key, command, kube_executor_config = jobs[0]
         dag_id, task_id, execution_date, try_number = key
 
-        self.worker_configuration.make_queue_pod(
+        pod = self.worker_configuration.make_queue_pod(
             namespace=self.namespace, worker_uuid=self.worker_uuid,
             pod_id=self._create_pod_id(dag_id, task_id),
             jobs=jobs,
             kube_executor_config=kube_executor_config
         )
+        # the watcher will monitor pods, so we do not block.
+        self.launcher.run_pod_async(pod, **self.kube_config.kube_client_request_args)
+        self.log.debug("Kubernetes Job created!")
 
     def run_next(self, next_job):
         """
