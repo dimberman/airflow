@@ -485,12 +485,11 @@ class AirflowKubernetesScheduler(LoggingMixin):
 
     def run_queue(self, queue_id, jobs):
         key, command, kube_executor_config = jobs[0]
-        dag_id, task_id, execution_date, try_number = key
         pod_id = hashlib.sha3_256(jobs)
         self.queue_map[pod_id] = jobs
         pod = self.worker_configuration.make_queue_pod(
             namespace=self.namespace, worker_uuid=self.worker_uuid,
-            pod_id=hashlib.sha3_256(jobs),
+            pod_id=hashlib.sha3_256(jobs).hexdigest(),
             jobs=jobs,
             kube_executor_config=kube_executor_config
         )
