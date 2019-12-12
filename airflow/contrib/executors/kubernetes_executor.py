@@ -44,6 +44,7 @@ from airflow.utils.db import provide_session, create_session
 from airflow import settings
 from airflow.exceptions import AirflowConfigException, AirflowException
 from airflow.utils.log.logging_mixin import LoggingMixin
+import hashlib
 
 MAX_POD_ID_LEN = 253
 MAX_LABEL_LEN = 63
@@ -460,6 +461,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
         self._manager = multiprocessing.Manager()
         self.watcher_queue = self._manager.Queue()
         self.worker_uuid = worker_uuid
+        self.queue_map = {}
         self.kube_watcher = self._make_kube_watcher()
 
     def _make_kube_watcher(self):
@@ -484,10 +486,11 @@ class AirflowKubernetesScheduler(LoggingMixin):
     def run_queue(self, queue_id, jobs):
         key, command, kube_executor_config = jobs[0]
         dag_id, task_id, execution_date, try_number = key
-
+        pod_id = hashlib.sha3_256(jobs)
+        self.queue_map[pod_id] = jobs
         pod = self.worker_configuration.make_queue_pod(
             namespace=self.namespace, worker_uuid=self.worker_uuid,
-            pod_id=self._create_pod_id(dag_id, task_id),
+            pod_id=hashlib.sha3_256(jobs),
             jobs=jobs,
             kube_executor_config=kube_executor_config
         )
@@ -545,13 +548,21 @@ class AirflowKubernetesScheduler(LoggingMixin):
             try:
                 task = self.watcher_queue.get_nowait()
                 try:
-                    self.process_watcher_task(task)
+                    self.process_watcher_group(task)
                 finally:
                     self.watcher_queue.task_done()
             except Empty:
                 # When self.watcher_queue is empty,
                 # this function returns
                 break
+
+    def process_watcher_group(self, task):
+        pod_id, state, labels, resource_version = task
+        jobs = self.queue_map.pop(pod_id)
+        for job in jobs:
+            key, _, _ = job
+            self.log.info('finishing job %s - %s (%s)', key, state, pod_id)
+            self.result_queue.put((key, state, pod_id, resource_version))
 
     def process_watcher_task(self, task):
         """Process the task by watcher."""
