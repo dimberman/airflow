@@ -392,7 +392,6 @@ class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin):
                 self.log.info("Terminating connection to kube-api.")
                 break
 
-
             self.log.info("xxx event: {}".format(event))
             task = event['object']
             self.log.info(
@@ -564,7 +563,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
         self.log.info("xxx current queue_map {}".format(self.queue_map.keys()))
         self.log.info("xxx current task {}".format(task))
         self.log.info("xxx popping {} from queue_map".format(pod_id))
-        jobs = self.queue_map.pop(pod_id)
+        jobs = self.queue_map.pop(pod_id, None)
         for job in jobs:
             key, _, _ = job
             self.log.info('finishing job %s - %s (%s)', key, state, pod_id)
