@@ -392,7 +392,6 @@ class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin):
                 self.log.info("Terminating connection to kube-api.")
                 break
 
-            self.log.info("xxx event: {}".format(event))
             task = event['object']
             self.log.info(
                 'Event: %s had an event of type %s',
