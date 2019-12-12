@@ -560,6 +560,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
     def process_watcher_group(self, task):
         pod_id, state, labels, resource_version = task
         self.log.info("xxx current queue_map {}".format(self.queue_map.keys()))
+        self.log.info("xxx current task {}".format(task))
         self.log.info("xxx popping {} from queue_map".format(pod_id))
         jobs = self.queue_map.pop(pod_id)
         for job in jobs:
