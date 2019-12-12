@@ -560,7 +560,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
     def process_watcher_group(self, task):
         pod_id, state, labels, resource_version = task
         self.log.info("xxx current queue_map {}".format(self.queue_map.keys()))
-        self.log.info("popping {}".format(pod_id))
+        self.log.info("xxx popping {} from queue_map".format(pod_id))
         jobs = self.queue_map.pop(pod_id)
         for job in jobs:
             key, _, _ = job
@@ -898,7 +898,6 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
                 break
         tasks_run = 0
         KubeResourceVersion.checkpoint_resource_version(last_resource_version)
-        self.log.info("xxx starting tasks")
         for _ in range(self.kube_config.worker_pods_creation_batch_size):
             tasks = []
             try:
@@ -907,7 +906,7 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
                     tasks_run += 1
                     tasks.append(task)
             except Empty:
-                self.log.info("xxx task queue empty, running fewer tasks")
+                self.log.info("task queue empty, running fewer tasks")
             try:
                 while tasks:
                     next_tasks = tasks[:10]
