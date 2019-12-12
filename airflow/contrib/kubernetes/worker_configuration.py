@@ -42,6 +42,17 @@ class WorkerConfiguration(LoggingMixin):
 
         super(WorkerConfiguration, self).__init__()
 
+    @staticmethod
+    def _datetime_to_label_safe_datestring(datetime_obj):
+        """
+        Kubernetes doesn't like ":" in labels, since ISO datetime format uses ":" but
+        not "_" let's
+        replace ":" with "_"
+        :param datetime_obj: datetime.datetime object
+        :return: ISO-like string representing the datetime
+        """
+        return datetime_obj.isoformat().replace(":", "_").replace('+', '_plus_')
+
     def _get_init_containers(self):
         """When using git to retrieve the DAGs, use the GitSync Init Container"""
         # If we're using volume claims to mount the dags, no init container is needed
@@ -356,17 +367,17 @@ class WorkerConfiguration(LoggingMixin):
         tolerations = kube_executor_config.tolerations or self.kube_config.kube_tolerations
         annotations = dict(kube_executor_config.annotations) or self.kube_config.kube_annotations
 
-        command = []
+        full_command = []
         dag_ids = []
 
         for job in jobs:
             key, command, kube_executor_config = job
             dag_id, task_id, execution_date, try_number = key
-            command.extend(job)
+            full_command.extend(command)
             # we want to run each task in parallel
-            command. append("&")
+            full_command.append("&")
         # remove unneeded &
-        command = command[:-1]
+        command = full_command[:-1]
 
         return Pod(
             namespace=namespace,
