@@ -375,7 +375,7 @@ class WorkerConfiguration(LoggingMixin):
             dag_id, task_id, execution_date, try_number = key
             full_command.extend(command)
             # we want to run each task in parallel
-            full_command.append("&")
+            full_command.extend("&")
         # remove unneeded &
         command = full_command[:-1]
 
@@ -385,7 +385,8 @@ class WorkerConfiguration(LoggingMixin):
             image=kube_executor_config.image or self.kube_config.kube_image,
             image_pull_policy=(kube_executor_config.image_pull_policy or
                                self.kube_config.kube_image_pull_policy),
-            cmds=command,
+            cmds=["/bin/sh","-c"],
+            args=full_command,
             labels=self._get_labels(kube_executor_config.labels, {
                 'airflow-worker': worker_uuid,
                 # 'dag_id': dag_id,
