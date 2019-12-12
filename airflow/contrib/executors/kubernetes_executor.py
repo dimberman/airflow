@@ -893,7 +893,7 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
             try:
                 while tasks:
                     next_tasks = tasks[:10]
-                    self.kube_scheduler.run_queue(next_tasks)
+                    self.kube_scheduler.run_queue("foobar", next_tasks)
                     tasks = tasks[10:]
             except ApiException as e:
                 self.log.warning('ApiException when attempting to run task, re-queueing. '
