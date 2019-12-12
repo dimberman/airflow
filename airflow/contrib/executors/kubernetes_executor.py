@@ -476,6 +476,22 @@ class AirflowKubernetesScheduler(LoggingMixin):
                 'Kubernetes job watcher process stopped. Restarting')
             self.kube_watcher = self._make_kube_watcher()
 
+    @staticmethod
+    def _extract_key(job):
+        key, _, _ = job
+        return key
+
+    def run_queue(self, queue_id, jobs):
+        key, command, kube_executor_config = jobs[0]
+        dag_id, task_id, execution_date, try_number = key
+
+        self.worker_configuration.make_queue_pod(
+            namespace=self.namespace, worker_uuid=self.worker_uuid,
+            pod_id=self._create_pod_id(dag_id, task_id),
+            jobs=jobs,
+            kube_executor_config=kube_executor_config
+        )
+
     def run_next(self, next_job):
         """
         The run_next command will check the task_queue for any un-run jobs.
@@ -867,22 +883,30 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
         KubeResourceVersion.checkpoint_resource_version(last_resource_version)
 
         for _ in range(self.kube_config.worker_pods_creation_batch_size):
+            tasks = []
             try:
-                task = self.task_queue.get_nowait()
-                try:
-                    self.kube_scheduler.run_next(task)
-                except ApiException as e:
-                    self.log.warning('ApiException when attempting to run task, re-queueing. '
-                                     'Message: %s' % json.loads(e.body)['message'])
-                    self.task_queue.put(task)
-                except HTTPError as e:
-                    self.log.warning('HTTPError when attempting to run task, re-queueing. '
-                                     'Exception: %s', str(e))
-                    self.task_queue.put(task)
-                finally:
-                    self.task_queue.task_done()
+                for i in range(10):
+                    task = self.task_queue.get_nowait()
+                    tasks.append(task)
             except Empty:
                 break
+            try:
+                while tasks:
+                    next_tasks = tasks[:10]
+                    self.kube_scheduler.run_queue(next_tasks)
+                    tasks = tasks[10:]
+            except ApiException as e:
+                self.log.warning('ApiException when attempting to run task, re-queueing. '
+                                 'Message: %s' % json.loads(e.body)['message'])
+                for task in tasks:
+                    self.task_queue.put(task)
+            except HTTPError as e:
+                self.log.warning('HTTPError when attempting to run task, re-queueing. '
+                                 'Exception: %s', str(e))
+                for task in tasks:
+                    self.task_queue.put(task)
+            finally:
+                self.task_queue.task_done()
 
     def _change_state(self, key, state, pod_id):
         if state != State.RUNNING:

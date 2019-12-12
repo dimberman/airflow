@@ -338,6 +338,67 @@ class WorkerConfiguration(LoggingMixin):
 
         return dag_volume_mount_path
 
+    def make_queue_pod(self, namespace, worker_uuid, pod_id, jobs, kube_executor_config):
+        volumes_dict, volume_mounts_dict = self._get_volumes_and_mounts()
+        worker_init_container_spec = self._get_init_containers()
+        resources = Resources(
+            request_memory=kube_executor_config.request_memory,
+            request_cpu=kube_executor_config.request_cpu,
+            limit_memory=kube_executor_config.limit_memory,
+            limit_cpu=kube_executor_config.limit_cpu,
+            limit_gpu=kube_executor_config.limit_gpu
+        )
+
+        volumes = [value for value in volumes_dict.values()] + kube_executor_config.volumes
+        volume_mounts = [value for value in volume_mounts_dict.values()] + kube_executor_config.volume_mounts
+
+        affinity = kube_executor_config.affinity or self.kube_config.kube_affinity
+        tolerations = kube_executor_config.tolerations or self.kube_config.kube_tolerations
+        annotations = dict(kube_executor_config.annotations) or self.kube_config.kube_annotations
+
+        command = []
+        dag_ids = []
+
+        for job in jobs:
+            key, command, kube_executor_config = job
+            dag_id, task_id, execution_date, try_number = key
+            command.extend(job)
+            # we want to run each task in parallel
+            command. append("&")
+        # remove unneeded &
+        command = command[:-1]
+
+        return Pod(
+            namespace=namespace,
+            name=pod_id,
+            image=kube_executor_config.image or self.kube_config.kube_image,
+            image_pull_policy=(kube_executor_config.image_pull_policy or
+                               self.kube_config.kube_image_pull_policy),
+            cmds=command,
+            labels=self._get_labels(kube_executor_config.labels, {
+                'airflow-worker': worker_uuid,
+                # 'dag_id': dag_id,
+                # 'task_id': task_id,
+                # 'execution_date': execution_date,
+                # 'try_number': str(try_number),
+            }),
+            envs=self._get_environment(),
+            secrets=self._get_secrets(),
+            service_account_name=self.kube_config.worker_service_account_name,
+            image_pull_secrets=self.kube_config.image_pull_secrets,
+            init_containers=worker_init_container_spec,
+            volumes=volumes,
+            volume_mounts=volume_mounts,
+            resources=resources,
+            annotations=annotations,
+            node_selectors=(kube_executor_config.node_selectors or
+                            self.kube_config.kube_node_selectors),
+            affinity=affinity,
+            tolerations=tolerations,
+            security_context=self._get_security_context(),
+            configmaps=self._get_configmaps()
+        )
+
     def make_pod(self, namespace, worker_uuid, pod_id, dag_id, task_id, execution_date,
                  try_number, airflow_command, kube_executor_config):
         volumes_dict, volume_mounts_dict = self._get_volumes_and_mounts()

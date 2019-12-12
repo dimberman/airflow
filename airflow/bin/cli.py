@@ -539,6 +539,11 @@ def airflow_worker(args):
 
 
 @cli_utils.action_logging
+def run_group(args):
+    tasks = json.loads(args.tasks)
+
+
+@cli_utils.action_logging
 def run(args, dag=None):
     if dag:
         args.dag_id = dag.dag_id
