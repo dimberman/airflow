@@ -25,7 +25,7 @@ import multiprocessing
 from uuid import uuid4
 
 from dateutil import parser
-
+import traceback
 import kubernetes
 from kubernetes import watch, client
 from kubernetes.client.rest import ApiException
@@ -350,7 +350,7 @@ class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin):
                 self.resource_version = self._run(kube_client, self.resource_version,
                                                   self.worker_uuid, self.kube_config)
             except Exception:
-                self.log.exception('Unknown error in KubernetesJobWatcher. Failing')
+                self.log.exception('Unknown error in KubernetesJobWatcher. Failing, {}'.format(traceback.format_exc()))
                 raise
             else:
                 self.log.info('Watcher will start back up with: '
