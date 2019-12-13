@@ -118,11 +118,8 @@ class BaseExecutor(LoggingMixin):
         # Triggering new jobs
         if not self.parallelism:
             open_slots = len(self.queued_tasks)
-            self.log.info("xxx no parallelism. open slots {}".format(self.open_slots))
         else:
-            self.log.info("xxx parallelism {}".format(self.parallelism))
             open_slots = self.parallelism - len(self.running)
-            self.log.info("xxx open slots {}".format(self.open_slots))
 
         num_running_tasks = len(self.running)
         num_queued_tasks = len(self.queued_tasks)
