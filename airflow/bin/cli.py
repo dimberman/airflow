@@ -501,41 +501,8 @@ def _run(args, dag, ti):
         executor.end()
 
 
-@cli_utils.action_logging
-def run(args, dag=None):
-    if dag:
-        args.dag_id = dag.dag_id
+def _run_task(dag, task, args):
 
-    log = LoggingMixin().log
-
-    # Load custom airflow config
-    if args.cfg_path:
-        with open(args.cfg_path, 'r') as conf_file:
-            conf_dict = json.load(conf_file)
-
-        if os.path.exists(args.cfg_path):
-            os.remove(args.cfg_path)
-
-        conf.read_dict(conf_dict, source=args.cfg_path)
-        settings.configure_vars()
-
-    # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
-    # behind multiple open sleeping connections while heartbeating, which could
-    # easily exceed the database connection limit when
-    # processing hundreds of simultaneous tasks.
-    settings.configure_orm(disable_connection_pool=True)
-
-    if not args.pickle and not dag:
-        dag = get_dag(args)
-    elif not dag:
-        with db.create_session() as session:
-            log.info('Loading pickle id %s', args.pickle)
-            dag_pickle = session.query(DagPickle).filter(DagPickle.id == args.pickle).first()
-            if not dag_pickle:
-                raise AirflowException("Who hid the pickle!? [missing pickle]")
-            dag = dag_pickle.pickle
-
-    task = dag.get_task(task_id=args.task_id)
     ti = TaskInstance(task, args.execution_date)
     ti.refresh_from_db()
 
@@ -543,13 +510,74 @@ def run(args, dag=None):
 
     hostname = get_hostname()
     log.info("Running %s on host %s", ti, hostname)
-
-    if args.interactive:
+    with redirect_stdout(ti.log, logging.INFO), redirect_stderr(ti.log, logging.WARN):
         _run(args, dag, ti)
+
+
+def run_all(args):
+    log = LoggingMixin().log
+    dag = get_dag(args)
+    task = dag.get_task(task_id=args.task_id)
+    pid = os.fork()
+    if not pid:
+        _run_task(dag, task, args)
+        os._exit(0)
     else:
-        with redirect_stdout(ti.log, logging.INFO), redirect_stderr(ti.log, logging.WARN):
-            _run(args, dag, ti)
+        os.waitpid(pid,0)
     logging.shutdown()
+
+
+
+@cli_utils.action_logging
+def run(args, dag=None):
+    if dag:
+        args.dag_id = dag.dag_id
+    run_all(args)
+    #
+    # log = LoggingMixin().log
+    #
+    # # Load custom airflow config
+    # if args.cfg_path:
+    #     with open(args.cfg_path, 'r') as conf_file:
+    #         conf_dict = json.load(conf_file)
+    #
+    #     if os.path.exists(args.cfg_path):
+    #         os.remove(args.cfg_path)
+    #
+    #     conf.read_dict(conf_dict, source=args.cfg_path)
+    #     settings.configure_vars()
+    #
+    # # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
+    # # behind multiple open sleeping connections while heartbeating, which could
+    # # easily exceed the database connection limit when
+    # # processing hundreds of simultaneous tasks.
+    # settings.configure_orm(disable_connection_pool=True)
+    #
+    # if not args.pickle and not dag:
+    #     dag = get_dag(args)
+    # elif not dag:
+    #     with db.create_session() as session:
+    #         log.info('Loading pickle id %s', args.pickle)
+    #         dag_pickle = session.query(DagPickle).filter(DagPickle.id == args.pickle).first()
+    #         if not dag_pickle:
+    #             raise AirflowException("Who hid the pickle!? [missing pickle]")
+    #         dag = dag_pickle.pickle
+    #
+    # task = dag.get_task(task_id=args.task_id)
+    # ti = TaskInstance(task, args.execution_date)
+    # ti.refresh_from_db()
+    #
+    # ti.init_run_context(raw=args.raw)
+    #
+    # hostname = get_hostname()
+    # log.info("Running %s on host %s", ti, hostname)
+    #
+    # if args.interactive:
+    #     _run(args, dag, ti)
+    # else:
+    #     with redirect_stdout(ti.log, logging.INFO), redirect_stderr(ti.log, logging.WARN):
+    #         _run(args, dag, ti)
+    # logging.shutdown()
 
 
 @cli_utils.action_logging
