@@ -342,6 +342,9 @@ class WorkerConfiguration(LoggingMixin):
                  try_number, airflow_command, kube_executor_config):
         volumes_dict, volume_mounts_dict = self._get_volumes_and_mounts()
         worker_init_container_spec = self._get_init_containers()
+        import json
+        airflow_object = json.loads({"task_id": task_id, "dag_id": dag_id, "execution_date": execution_date})
+        airflow_command = airflow_command + " --tasks " + airflow_object
         resources = Resources(
             request_memory=kube_executor_config.request_memory,
             request_cpu=kube_executor_config.request_cpu,

@@ -139,8 +139,10 @@ def process_subdir(subdir):
         subdir = os.path.abspath(os.path.expanduser(subdir))
         return subdir
 
-
 def get_dag(args):
+    _get_dag(args.dag_id, args.subdir)
+
+def _get_dag(dag_id, subdir):
     dagbag = DagBag(process_subdir(args.subdir))
     if args.dag_id not in dagbag.dags:
         raise AirflowException(
@@ -501,9 +503,9 @@ def _run(args, dag, ti):
         executor.end()
 
 
-def _run_task(dag, task, args):
+def _run_task(dag, task, execution_date, args):
 
-    ti = TaskInstance(task, args.execution_date)
+    ti = TaskInstance(task, execution_date)
     ti.refresh_from_db()
 
     ti.init_run_context(raw=args.raw)
@@ -514,13 +516,16 @@ def _run_task(dag, task, args):
         _run(args, dag, ti)
 
 
+@cli_utils.action_logging
 def run_all(args):
+    tasks = json.loads(args.tasks)
     log = LoggingMixin().log
-    dag = get_dag(args)
-    task = dag.get_task(task_id=args.task_id)
+    # task_instances = args.task_instances
+    dag = _get_dag(tasks['dag_id'], args.subdir)
+    task = dag.get_task(task_id=tasks['task_id'])
     pid = os.fork()
     if not pid:
-        _run_task(dag, task, args)
+        _run_task(dag, task, tasks['execution_date'], args)
         os._exit(0)
     else:
         os.waitpid(pid,0)
@@ -532,52 +537,51 @@ def run_all(args):
 def run(args, dag=None):
     if dag:
         args.dag_id = dag.dag_id
-    run_all(args)
-    #
-    # log = LoggingMixin().log
-    #
-    # # Load custom airflow config
-    # if args.cfg_path:
-    #     with open(args.cfg_path, 'r') as conf_file:
-    #         conf_dict = json.load(conf_file)
-    #
-    #     if os.path.exists(args.cfg_path):
-    #         os.remove(args.cfg_path)
-    #
-    #     conf.read_dict(conf_dict, source=args.cfg_path)
-    #     settings.configure_vars()
-    #
-    # # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
-    # # behind multiple open sleeping connections while heartbeating, which could
-    # # easily exceed the database connection limit when
-    # # processing hundreds of simultaneous tasks.
-    # settings.configure_orm(disable_connection_pool=True)
-    #
-    # if not args.pickle and not dag:
-    #     dag = get_dag(args)
-    # elif not dag:
-    #     with db.create_session() as session:
-    #         log.info('Loading pickle id %s', args.pickle)
-    #         dag_pickle = session.query(DagPickle).filter(DagPickle.id == args.pickle).first()
-    #         if not dag_pickle:
-    #             raise AirflowException("Who hid the pickle!? [missing pickle]")
-    #         dag = dag_pickle.pickle
-    #
-    # task = dag.get_task(task_id=args.task_id)
-    # ti = TaskInstance(task, args.execution_date)
-    # ti.refresh_from_db()
-    #
-    # ti.init_run_context(raw=args.raw)
-    #
-    # hostname = get_hostname()
-    # log.info("Running %s on host %s", ti, hostname)
-    #
-    # if args.interactive:
-    #     _run(args, dag, ti)
-    # else:
-    #     with redirect_stdout(ti.log, logging.INFO), redirect_stderr(ti.log, logging.WARN):
-    #         _run(args, dag, ti)
-    # logging.shutdown()
+
+    log = LoggingMixin().log
+
+    # Load custom airflow config
+    if args.cfg_path:
+        with open(args.cfg_path, 'r') as conf_file:
+            conf_dict = json.load(conf_file)
+
+        if os.path.exists(args.cfg_path):
+            os.remove(args.cfg_path)
+
+        conf.read_dict(conf_dict, source=args.cfg_path)
+        settings.configure_vars()
+
+    # IMPORTANT, have to use the NullPool, otherwise, each "run" command may leave
+    # behind multiple open sleeping connections while heartbeating, which could
+    # easily exceed the database connection limit when
+    # processing hundreds of simultaneous tasks.
+    settings.configure_orm(disable_connection_pool=True)
+
+    if not args.pickle and not dag:
+        dag = get_dag(args)
+    elif not dag:
+        with db.create_session() as session:
+            log.info('Loading pickle id %s', args.pickle)
+            dag_pickle = session.query(DagPickle).filter(DagPickle.id == args.pickle).first()
+            if not dag_pickle:
+                raise AirflowException("Who hid the pickle!? [missing pickle]")
+            dag = dag_pickle.pickle
+
+    task = dag.get_task(task_id=args.task_id)
+    ti = TaskInstance(task, args.execution_date)
+    ti.refresh_from_db()
+
+    ti.init_run_context(raw=args.raw)
+
+    hostname = get_hostname()
+    log.info("Running %s on host %s", ti, hostname)
+
+    if args.interactive:
+        _run(args, dag, ti)
+    else:
+        with redirect_stdout(ti.log, logging.INFO), redirect_stderr(ti.log, logging.WARN):
+            _run(args, dag, ti)
+    logging.shutdown()
 
 
 @cli_utils.action_logging
@@ -2095,6 +2099,14 @@ class CLIFactory(object):
         }, {
             'func': run,
             'help': "Run a single task instance",
+            'args': (
+                'dag_id', 'task_id', 'execution_date', 'subdir',
+                'mark_success', 'force', 'pool', 'cfg_path',
+                'local', 'raw', 'ignore_all_dependencies', 'ignore_dependencies',
+                'ignore_depends_on_past', 'ship_dag', 'pickle', 'job_id', 'interactive',),
+        }, {
+            'func': run_all,
+            'help': "Run multiple task instances",
             'args': (
                 'dag_id', 'task_id', 'execution_date', 'subdir',
                 'mark_success', 'force', 'pool', 'cfg_path',
