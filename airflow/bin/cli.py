@@ -34,6 +34,7 @@ import getpass
 import reprlib
 import argparse
 from builtins import input
+from dateutil import parser
 
 from airflow.utils.dot_renderer import render_dag
 from airflow.utils.timezone import parse as parsedate
@@ -515,6 +516,16 @@ def _run_task(dag, task, execution_date, args):
     with redirect_stdout(ti.log, logging.INFO), redirect_stderr(ti.log, logging.WARN):
         _run(args, dag, ti)
 
+def _label_safe_datestring_to_datetime(string):
+    """
+    Kubernetes doesn't permit ":" in labels. ISO datetime format uses ":" but not
+    "_", let's
+    replace ":" with "_"
+
+    :param string: str
+    :return: datetime.datetime object
+    """
+    return parser.parse(string.replace('_plus_', '+').replace("_", ":"))
 
 @cli_utils.action_logging
 def run_all(args):
@@ -525,7 +536,7 @@ def run_all(args):
     task = dag.get_task(task_id=tasks['task_id'])
     pid = os.fork()
     if not pid:
-        _run_task(dag, task, parsedate(tasks['execution_date']), args)
+        _run_task(dag, task, parsedate(_label_safe_datestring_to_datetime(tasks['execution_date'])), args)
         os._exit(0)
     else:
         os.waitpid(pid,0)
