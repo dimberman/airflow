@@ -494,7 +494,8 @@ class AirflowKubernetesScheduler(LoggingMixin):
             dag_id=self._make_safe_label_value(dag_id),
             task_id=self._make_safe_label_value(task_id),
             try_number=try_number,
-            execution_date=self._datetime_to_label_safe_datestring(execution_date),
+            execution_Date=execution_date,
+            execution_date_label=self._datetime_to_label_safe_datestring(execution_date),
             airflow_command=command, kube_executor_config=kube_executor_config
         )
         # the watcher will monitor pods, so we do not block.
