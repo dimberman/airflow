@@ -338,7 +338,7 @@ class WorkerConfiguration(LoggingMixin):
 
         return dag_volume_mount_path
 
-    def make_pod(self, namespace, worker_uuid, pod_id, dag_id, task_id, execution_date,execution_date_label,
+    def make_pod(self, namespace, worker_uuid, pod_id, dag_id, task_id, execution_date, execution_date_label,
                  try_number, airflow_command, kube_executor_config):
         volumes_dict, volume_mounts_dict = self._get_volumes_and_mounts()
         worker_init_container_spec = self._get_init_containers()
