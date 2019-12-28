@@ -531,13 +531,17 @@ def _label_safe_datestring_to_datetime(string):
 def run_all(args):
     tasks = json.loads(args.tasks)
     log = LoggingMixin().log
+    log.info(tasks)
     # task_instances = args.task_instances
     dag = _get_dag(tasks['dag_id'], args.subdir)
     task = dag.get_task(task_id=tasks['task_id'])
     pid = os.fork()
     if not pid:
-        _run_task(dag, task, _label_safe_datestring_to_datetime(tasks['execution_date']), args)
+        log.info("ex date {}".format(tasks["execution_date"]))
+        ex_date = _label_safe_datestring_to_datetime(tasks["execution_date"])
+        _run_task(dag, task, ex_date, args)
         os._exit(0)
+
     else:
         os.waitpid(pid,0)
     logging.shutdown()
