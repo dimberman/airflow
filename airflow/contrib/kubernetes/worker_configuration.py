@@ -46,7 +46,7 @@ class WorkerConfiguration(LoggingMixin):
         """When using git to retrieve the DAGs, use the GitSync Init Container"""
         # If we're using volume claims to mount the dags, no init container is needed
         if self.kube_config.dags_volume_claim or \
-           self.kube_config.dags_volume_host or self.kube_config.dags_in_image:
+            self.kube_config.dags_volume_host or self.kube_config.dags_in_image:
             return []
 
         # Otherwise, define a git-sync init container
@@ -171,14 +171,14 @@ class WorkerConfiguration(LoggingMixin):
             env['AIRFLOW_HOME'] = self.worker_airflow_home
             env['AIRFLOW__CORE__DAGS_FOLDER'] = self.worker_airflow_dags
         if (not self.kube_config.airflow_configmap and
-                'AIRFLOW__CORE__SQL_ALCHEMY_CONN' not in self.kube_config.kube_secrets):
+            'AIRFLOW__CORE__SQL_ALCHEMY_CONN' not in self.kube_config.kube_secrets):
             env['AIRFLOW__CORE__SQL_ALCHEMY_CONN'] = conf.get("core", "SQL_ALCHEMY_CONN")
         if self.kube_config.git_dags_folder_mount_point:
             # /root/airflow/dags/repo/dags
             dag_volume_mount_path = os.path.join(
                 self.kube_config.git_dags_folder_mount_point,
                 self.kube_config.git_sync_dest,  # repo
-                self.kube_config.git_subpath     # dags
+                self.kube_config.git_subpath  # dags
             )
             env['AIRFLOW__CORE__DAGS_FOLDER'] = dag_volume_mount_path
         return env
@@ -344,7 +344,15 @@ class WorkerConfiguration(LoggingMixin):
         worker_init_container_spec = self._get_init_containers()
         import json
         airflow_object = json.loads({"task_id": task_id, "dag_id": dag_id, "execution_date": execution_date})
-        airflow_command = airflow_command + " --tasks " + airflow_object
+        cmd = ["airflow",
+               "run_all",
+               "--tasks",
+               airflow_object,
+               "--local",
+               "--pool",
+               "default_pool",
+               "-sd",
+               "/usr/local/airflow/dags/smaller-scale.py"]
         resources = Resources(
             request_memory=kube_executor_config.request_memory,
             request_cpu=kube_executor_config.request_cpu,
@@ -369,7 +377,7 @@ class WorkerConfiguration(LoggingMixin):
             image=kube_executor_config.image or self.kube_config.kube_image,
             image_pull_policy=(kube_executor_config.image_pull_policy or
                                self.kube_config.kube_image_pull_policy),
-            cmds=airflow_command,
+            cmds=cmd,
             labels=self._get_labels(kube_executor_config.labels, {
                 'airflow-worker': worker_uuid,
                 'dag_id': dag_id,
