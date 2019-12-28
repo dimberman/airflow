@@ -536,7 +536,7 @@ def run_all(args):
     task = dag.get_task(task_id=tasks['task_id'])
     pid = os.fork()
     if not pid:
-        _run_task(dag, task, parsedate(_label_safe_datestring_to_datetime(tasks['execution_date'])), args)
+        _run_task(dag, task, _label_safe_datestring_to_datetime(tasks['execution_date']), args)
         os._exit(0)
     else:
         os.waitpid(pid,0)
