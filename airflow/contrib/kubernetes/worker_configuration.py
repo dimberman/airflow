@@ -343,7 +343,7 @@ class WorkerConfiguration(LoggingMixin):
         volumes_dict, volume_mounts_dict = self._get_volumes_and_mounts()
         worker_init_container_spec = self._get_init_containers()
         import json
-        airflow_object = json.loads({"task_id": task_id, "dag_id": dag_id, "execution_date": execution_date})
+        airflow_object = json.dumps({"task_id": task_id, "dag_id": dag_id, "execution_date": execution_date})
         cmd = ["airflow",
                "run_all",
                "--tasks",
