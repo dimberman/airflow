@@ -143,12 +143,12 @@ def get_dag(args):
     _get_dag(args.dag_id, args.subdir)
 
 def _get_dag(dag_id, subdir):
-    dagbag = DagBag(process_subdir(args.subdir))
-    if args.dag_id not in dagbag.dags:
+    dagbag = DagBag(process_subdir(subdir))
+    if dag_id not in dagbag.dags:
         raise AirflowException(
             'dag_id could not be found: {}. Either the dag did not exist or it failed to '
-            'parse.'.format(args.dag_id))
-    return dagbag.dags[args.dag_id]
+            'parse.'.format(dag_id))
+    return dagbag.dags[dag_id]
 
 
 def get_dags(args):
@@ -525,7 +525,7 @@ def run_all(args):
     task = dag.get_task(task_id=tasks['task_id'])
     pid = os.fork()
     if not pid:
-        _run_task(dag, task, tasks['execution_date'], args)
+        _run_task(dag, task, parsedate(tasks['execution_date']), args)
         os._exit(0)
     else:
         os.waitpid(pid,0)
@@ -1555,6 +1555,7 @@ class CLIFactory(object):
         # Shared
         'dag_id': Arg(("dag_id",), "The id of the dag"),
         'task_id': Arg(("task_id",), "The id of the task"),
+        'tasks': Arg(("--tasks",), "a list of tasks in json"),
         'execution_date': Arg(
             ("execution_date",), help="The execution date of the DAG",
             type=parsedate),
@@ -2108,7 +2109,7 @@ class CLIFactory(object):
             'func': run_all,
             'help': "Run multiple task instances",
             'args': (
-                'dag_id', 'task_id', 'execution_date', 'subdir',
+                'tasks', 'subdir',
                 'mark_success', 'force', 'pool', 'cfg_path',
                 'local', 'raw', 'ignore_all_dependencies', 'ignore_dependencies',
                 'ignore_depends_on_past', 'ship_dag', 'pickle', 'job_id', 'interactive',),
