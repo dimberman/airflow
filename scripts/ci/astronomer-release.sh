@@ -17,7 +17,7 @@ basic_sanity_checks
 
 script_start
 
-python3 setup.py verify compile_assets sdist bdist_wheel
+python3 setup.py --quiet verify compile_assets sdist bdist_wheel
 
 ls -altr dist/*
 
