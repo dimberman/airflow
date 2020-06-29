@@ -22,6 +22,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from airflow.settings import Stats
+import enum
 import logging
 import multiprocessing
 import os
@@ -33,12 +35,13 @@ import zipfile
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from importlib import import_module
-import enum
 from typing import NamedTuple, Iterable
 
 import psutil
-from setproctitle import setproctitle
 import six
+from airflow.utils.process_utils import reap_process_group
+from airflow.utils.session import provide_session
+from setproctitle import setproctitle
 from six.moves import reload_module
 from sqlalchemy import or_
 from tabulate import tabulate
@@ -48,13 +51,12 @@ import airflow.models
 from airflow.configuration import conf
 from airflow.dag.base_dag import BaseDag, BaseDagBag
 from airflow.exceptions import AirflowException
-from airflow.settings import Stats
 from airflow.models import errors
 from airflow.settings import STORE_DAG_CODE, STORE_SERIALIZED_DAGS
 from airflow.utils import timezone
 from airflow.utils.helpers import reap_process_group
-from airflow.utils.db import provide_session
 from airflow.utils.log.logging_mixin import LoggingMixin
+from airflow.utils.mixins import MultiprocessingStartMethodMixin
 from airflow.utils.state import State
 
 if six.PY2:
@@ -375,7 +377,7 @@ def list_py_file_paths(directory, safe_mode=conf.getboolean('core', 'DAG_DISCOVE
     return file_paths
 
 
-class AbstractDagFileProcessor(object):
+class AbstractDagFileProcessorProcess(object):
     """
     Processes a DAG file. See SchedulerJob.process_file() for more details.
     """
@@ -468,12 +470,19 @@ DagFileStat = NamedTuple('DagFileStat', [
 
 
 class DagParsingSignal(enum.Enum):
-    AGENT_HEARTBEAT = 'agent_heartbeat'
+    """All signals sent to parser."""
+    AGENT_RUN_ONCE = 'agent_run_once'
     TERMINATE_MANAGER = 'terminate_manager'
     END_MANAGER = 'end_manager'
 
 
-class DagFileProcessorAgent(LoggingMixin):
+FailureCallbackRequest = NamedTuple('FailureCallbackRequest', [
+    ('full_filepath', str),
+    ('simple_task_instance', SimpleTaskInstance),
+    ('msg', str)])
+
+
+class DagFileProcessorAgent(LoggingMixin, MultiprocessingStartMethodMixin):
     """
     Agent for DAG file processing. It is responsible for all DAG parsing
     related jobs in scheduler process. Mainly it can spin up DagFileProcessorManager
@@ -481,38 +490,42 @@ class DagFileProcessorAgent(LoggingMixin):
     signal/DAG parsing stat with it.
 
     This class runs in the main `airflow scheduler` process.
+
+    :param dag_directory: Directory where DAG definitions are kept. All
+        files in file_paths should be under this directory
+    :type dag_directory: str
+    :param max_runs: The number of times to parse and schedule each file. -1
+        for unlimited.
+    :type max_runs: int
+    :param processor_factory: function that creates processors for DAG
+        definition files. Arguments are (dag_definition_path, log_file_path)
+    :type processor_factory: (str, str, list) -> (AbstractDagFileProcessorProcess)
+    :param processor_timeout: How long to wait before timing out a DAG file processor
+    :type processor_timeout: timedelta
+    :param dag_ids: if specified, only schedule tasks with these DAG IDs
+    :type dag_ids: list[str]
+    :param pickle_dags: whether to pickle DAGs.
+    :type: pickle_dags: bool
+    :param async_mode: Whether to start agent in async mode
+    :type async_mode: bool
     """
 
     def __init__(self,
                  dag_directory,
-                 file_paths,
                  max_runs,
                  processor_factory,
                  processor_timeout,
+                 dag_ids,
+                 pickle_dags,
                  async_mode):
-        """
-        :param dag_directory: Directory where DAG definitions are kept. All
-            files in file_paths should be under this directory
-        :type dag_directory: unicode
-        :param file_paths: list of file paths that contain DAG definitions
-        :type file_paths: list[unicode]
-        :param max_runs: The number of times to parse and schedule each file. -1
-            for unlimited.
-        :type max_runs: int
-        :param processor_factory: function that creates processors for DAG
-            definition files. Arguments are (dag_definition_path, log_file_path)
-        :type processor_factory: (unicode, unicode, list) -> (AbstractDagFileProcessor)
-        :param processor_timeout: How long to wait before timing out a DAG file processor
-        :type processor_timeout: timedelta
-        :param async_mode: Whether to start agent in async mode
-        :type async_mode: bool
-        """
-        self._file_paths = file_paths
+        super(DagFileProcessorAgent, self).__init__()
         self._file_path_queue = []
         self._dag_directory = dag_directory
         self._max_runs = max_runs
         self._processor_factory = processor_factory
         self._processor_timeout = processor_timeout
+        self._dag_ids = dag_ids
+        self._pickle_dags = pickle_dags
         self._async_mode = async_mode
         # Map from file path to the processor
         self._processors = {}
@@ -529,8 +542,11 @@ class DagFileProcessorAgent(LoggingMixin):
         """
         Launch DagFileProcessorManager processor and start DAG parsing loop in manager.
         """
-        self._parent_signal_conn, child_signal_conn = multiprocessing.Pipe()
-        self._process = multiprocessing.Process(
+        mp_start_method = self._get_multiprocessing_start_method()
+        context = multiprocessing.get_context(mp_start_method)
+
+        self._parent_signal_conn, child_signal_conn = context.Pipe()
+        self._process = context.Process(
             target=type(self)._run_processor_manager,
             args=(
                 self._dag_directory,
@@ -539,7 +555,9 @@ class DagFileProcessorAgent(LoggingMixin):
                 self._processor_factory,
                 self._processor_timeout,
                 child_signal_conn,
-                self._async_mode,
+                self._dag_ids,
+                self._pickle_dags,
+                self._async_mode
             )
         )
         self._process.start()
@@ -584,6 +602,8 @@ class DagFileProcessorAgent(LoggingMixin):
                                processor_factory,
                                processor_timeout,
                                signal_conn,
+                               dag_ids,
+                               pickle_dags,
                                async_mode):
 
         # Make this process start as a new process group - that makes it easy
@@ -610,6 +630,8 @@ class DagFileProcessorAgent(LoggingMixin):
                                                     processor_factory,
                                                     processor_timeout,
                                                     signal_conn,
+                                                    dag_ids,
+                                                    pickle_dags,
                                                     async_mode)
 
         processor_manager.start()
@@ -721,7 +743,11 @@ class DagFileProcessorManager(LoggingMixin):
     :param processor_timeout: How long to wait before timing out a DAG file processor
     :type processor_timeout: timedelta
     :param signal_conn: connection to communicate signal with processor agent.
-    :type signal_conn: airflow.models.connection.Connection
+    :type signal_conn: MultiprocessingConnection
+    :param dag_ids: if specified, only schedule tasks with these DAG IDs
+    :type dag_ids: list[str]
+    :param pickle_dags: whether to pickle DAGs.
+    :type pickle_dags: bool
     :param async_mode: whether to start the manager in async mode
     :type async_mode: bool
     """
@@ -733,6 +759,8 @@ class DagFileProcessorManager(LoggingMixin):
                  processor_factory,
                  processor_timeout,
                  signal_conn,
+                 dag_ids,
+                 pickle_dags,
                  async_mode=True):
         self._file_paths = file_paths
         self._file_path_queue = []
@@ -740,6 +768,8 @@ class DagFileProcessorManager(LoggingMixin):
         self._max_runs = max_runs
         self._processor_factory = processor_factory
         self._signal_conn = signal_conn
+        self._pickle_dags = pickle_dags
+        self._dag_ids = dag_ids
         self._async_mode = async_mode
 
         self._parallelism = conf.getint('scheduler', 'max_threads')
@@ -1216,7 +1246,14 @@ class DagFileProcessorManager(LoggingMixin):
         """
         while self._parallelism - len(self._processors) > 0 and self._file_path_queue:
             file_path = self._file_path_queue.pop(0)
-            processor = self._processor_factory(file_path, self._zombies)
+            callback_to_execute_for_file = self._callback_to_execute[file_path]
+            processor = self._processor_factory(
+                file_path,
+                callback_to_execute_for_file,
+                self._dag_ids,
+                self._pickle_dags)
+
+            del self._callback_to_execute[file_path]
             Stats.incr('dag_processing.processes')
 
             processor.start()

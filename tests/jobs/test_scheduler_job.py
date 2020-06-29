@@ -34,7 +34,6 @@ from tempfile import mkdtemp
 import psutil
 import pytest
 import six
-from airflow.models.taskinstance import TaskInstance
 from parameterized import parameterized
 
 import airflow.example_dags
@@ -42,8 +41,10 @@ from airflow import AirflowException, models, settings
 from airflow.configuration import conf
 from airflow.executors import BaseExecutor
 from airflow.jobs import BackfillJob, SchedulerJob
+from airflow.jobs.scheduler_job import DagFileProcessor
 from airflow.models import DAG, DagBag, DagModel, DagRun, Pool, SlaMiss, \
     TaskInstance as TI, errors
+from airflow.models.taskinstance import TaskInstance
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils import timezone
@@ -53,6 +54,7 @@ from airflow.utils.db import create_session, provide_session
 from airflow.utils.state import State
 from tests.compat import MagicMock, Mock, PropertyMock, mock, patch
 from tests.test_core import TEST_DAG_FOLDER
+from tests.test_utils.config import conf_vars
 from tests.test_utils.db import (
     clear_db_dags, clear_db_errors, clear_db_pools, clear_db_runs, clear_db_sla_miss, set_default_pool_slots,
 )
@@ -1443,20 +1445,79 @@ class SchedulerJobTest(unittest.TestCase):
         session.commit()
         session.close()
 
-        scheduler = SchedulerJob()
-        dag.clear()
+    @conf_vars({("core", "mp_start_method"): "spawn"})
+    def test_scheduler_multiprocessing_with_spawn_method(self):
+        """
+        Test that the scheduler can successfully queue multiple dags in parallel
+        when using "spawn" mode of multiprocessing. (Fork is default on Linux and older OSX)
+        """
+        dag_ids = ['test_start_date_scheduling', 'test_dagrun_states_success']
+        for dag_id in dag_ids:
+            dag = self.dagbag.get_dag(dag_id)
+            dag.clear()
 
-        dr = scheduler.create_dag_run(dag)
-        self.assertIsNotNone(dr)
+        scheduler = SchedulerJob(dag_ids=dag_ids,
+                                 executor=self.null_exec,
+                                 subdir=os.path.join(
+                                     TEST_DAG_FOLDER, 'test_scheduler_dags.py'),
+                                 num_runs=1)
 
+        scheduler.run()
+
+        # zero tasks ran
+        dag_id = 'test_start_date_scheduling'
+        with create_session() as session:
+            self.assertEqual(
+                session.query(TaskInstance).filter(TaskInstance.dag_id == dag_id).count(), 0)
+
+    def test_scheduler_verify_pool_full(self):
         dag = DAG(
-            dag_id='test_scheduler_do_not_schedule_removed_task',
+            dag_id='test_scheduler_verify_pool_full',
             start_date=DEFAULT_DATE)
 
-        mock_list = Mock()
-        scheduler._process_task_instances(dag, task_instances_list=mock_list)
+        DummyOperator(
+            task_id='dummy',
+            dag=dag,
+            owner='airflow',
+            pool='test_scheduler_verify_pool_full')
 
-        mock_list.put.assert_not_called()
+        session = settings.Session()
+        pool = Pool(pool='test_scheduler_verify_pool_full', slots=1)
+        session.add(pool)
+        orm_dag = DagModel(dag_id=dag.dag_id)
+        orm_dag.is_paused = False
+        session.merge(orm_dag)
+        session.commit()
+
+        # Create 2 dagruns, which will create 2 task instances.
+        dag_file_processor = DagFileProcessor(dag_ids=[], log=mock.MagicMock())
+        dr = dag_file_processor.create_dag_run(dag)
+        self.assertIsNotNone(dr)
+        self.assertEqual(dr.execution_date, DEFAULT_DATE)
+        dr = dag_file_processor.create_dag_run(dag)
+        self.assertIsNotNone(dr)
+        dag_runs = DagRun.find(dag_id="test_scheduler_verify_pool_full")
+        task_instances_list = dag_file_processor._process_task_instances(dag, dag_runs=dag_runs)
+        self.assertEqual(len(task_instances_list), 2)
+        dagbag = self._make_simple_dag_bag([dag])
+
+        # Recreated part of the scheduler here, to kick off tasks -> executor
+        for ti_key in task_instances_list:
+            task = dag.get_task(ti_key[1])
+            ti = TaskInstance(task, ti_key[2])
+            # Task starts out in the scheduled state. All tasks in the
+            # scheduled state will be sent to the executor
+            ti.state = State.SCHEDULED
+
+            # Also save this task instance to the DB.
+            session.merge(ti)
+        session.commit()
+
+        self.assertEqual(len(scheduler.executor.queued_tasks), 0, "Check test pre-condition")
+        scheduler._execute_task_instances(dagbag, session=session)
+
+        self.assertEqual(len(scheduler.executor.queued_tasks), 1)
+
 
     def test_scheduler_do_not_schedule_too_early(self):
         dag = DAG(
